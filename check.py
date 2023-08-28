@@ -2,112 +2,112 @@ import streamlit as st
 import os
 import pandas as pd
 import json
+import copy
 from collections import defaultdict
+import nltk
+nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
-
+import re
 
 json_folder_path = './test/'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
 
 st.set_page_config(layout="wide")
 
-def recursive_defaultdict():
-    return defaultdict(recursive_defaultdict)
-
-def defaultdict_to_dict(d):
-    if isinstance(d, defaultdict):
-        d = {k: defaultdict_to_dict(v) for k, v in d.items()}
-    return d
-
-def save_feedback(patient_id, display_names, feedback_data, correct_rows):
-    # 피드백을 섹션과 행 인덱스로 정렬
-    sorted_feedback_data = sorted(feedback_data, key=lambda x: (x[0], x[1]))
-    sorted_correct_rows = sorted(correct_rows, key=lambda x: (x[0], x[1]))
-
-    data_to_save = {
-        'feedback': sorted_feedback_data,
-        'correct_rows': sorted_correct_rows
-    }
+def save_feedback(patient_id, display_names, feedback_data, correct_rows, feedback_columns=['include', 'delete', 'modify', 'opinion']):
+    original_name = display_names.split('_')[-1]
+    original_json = load_json(f"./test/{patient_id}/{original_name}.json")
+    new_json = copy.deepcopy(original_json)
     
-    os.makedirs(f"./feedback/{patient_id}", exist_ok=True)
-    with open(f"./feedback/{patient_id}/{display_names}.json", "w") as f:
-        json.dump(data_to_save, f)
+    annotations_list = json.loads(original_json['annotations'])
+    
+    for sec, sec_data in feedback_data.items():
+        for idx_str, feedback in sec_data.items():
+            idx = int(idx_str)
+            
+            existing_annotation = next((annotation for annotation in annotations_list if annotation['sec'] == sec and annotation['sent_idx'] == idx+1), None)
+
+            if existing_annotation:
+                modified_annotation = copy.deepcopy(existing_annotation)
+
+                # Single-key items (e.g., 'cat', 'norm_ent')
+                single_keys = set(value.split(':')[0].strip(" '") for value in feedback.values() if len(value.split(':')) == 2)
+
+                # Triple-key items (e.g., 'tmp: nchg: stable')
+                triple_keys = set(value.split(':')[1].strip(" '") for value in feedback.values() if len(value.split(':')) == 3)
+
+                # print("Single keys:", single_keys)
+                # print("Triple keys:", triple_keys)
+                # updated_first_value = False  # 플래그를 먼저 False로 설정
+
+                # print("feedback", feedback)
+
+                for key, value in feedback.items():
+                    prefix = key.split('_')[0]
+                    
+                    if prefix in feedback_columns:
+                        if prefix == 'opinion':
+                            modified_annotation['opinion'] = value
+                        else:
+                            key_value_pair = value.split(": ")
+                            if len(key_value_pair) == 1:
+                                print(f"Invalid feedback. Expected key-value pair for prefix {prefix}, got {key_value_pair}")
+                                st.error(f"Invalid feedback. Expected key-value pair for prefix {prefix}, got {key_value_pair}", icon="🚨")
+                            
+                            if len(key_value_pair) == 2:
+                                k, v = key_value_pair
+                                k = remove_quotes_with_re(k)
+                                v = remove_quotes_with_re(v)
+
+                                if prefix == 'include':
+                                    if k in modified_annotation:
+                                        if isinstance(modified_annotation[k], list):
+                                            modified_annotation[k].append(v)
+                                        else:
+                                            modified_annotation[k] = [modified_annotation[k], v]
+                                    else:
+                                        modified_annotation[k] = v
+                                elif prefix == 'modify':
+                                    if k in modified_annotation:
+                                        modified_annotation[k] = v
+                                elif prefix == 'delete':
+                                    if k in modified_annotation and modified_annotation[k] == v:
+                                        del modified_annotation[k]
+                                        
+                            if len(key_value_pair) == 3:
+                                k1, k2, v = key_value_pair
+                                if k1 in modified_annotation:
+                                    if isinstance(modified_annotation[k1], dict):
+                                        modified_annotation[k1][k2] = v
+                                    else:
+                                        # 이 경우 modified_annotation[k1]가 dict가 아니라고 가정하고 새 dict를 생성합니다.
+                                        modified_annotation[k1] = {k2: v}
+                                else:
+                                    modified_annotation[k1] = {k2: v}
+
+                                    
+                annotations_list.remove(existing_annotation)
+                annotations_list.append(modified_annotation)
+                
+    new_json['annotations'] = annotations_list#json.dumps(annotations_list, indent=4)
+
+    
+    # print("new_json", new_json)
+
+    # Create directories if they don't exist
+    reviewer_name = st.session_state.reviewer_name
+    os.makedirs(f"./feedback/{reviewer_name}/{patient_id}", exist_ok=True)
+    
+    # Save the new JSON
+    with open(f"./feedback/{reviewer_name}/{patient_id}/{display_names}.json", "w") as f:
+        json.dump(new_json, f, indent=4)
 
 
 def load_feedback(patient_id, display_names):
-    try:
-        with open(f"./feedback/{patient_id}/{display_names}.json", "r") as f:
-            feedback_data = json.load(f)
-            return feedback_data
-    except FileNotFoundError:
-        return None
-
-def load_json(filepath):
-    with open(filepath, 'r') as f:
-        data = json.load(f)
-    return data
-
-# Simplified sentence tokenizer
-def custom_sent_tokenize(text):
-    sentences = text.split('. ')
-    sentences = [s + '.' if s != sentences[-1] else s for s in sentences]
-
-    return sentences
-
-# Helper function to tokenize sentences from annotations
-def tokenize_annotations(annotations):
-    tokenized_annotations = []
-    for sent in annotations:
-        tokenized_annotations.extend(sent_tokenize(sent))
-    return tokenized_annotations
-
-
-def get_statistics(data, dfs):
+    if os.path.exists(f"./feedback/{st.session_state.reviewer_name}/{patient_id}/{display_names}.json"):
+        feedback_data = load_json(f"./feedback/{st.session_state.reviewer_name}/{patient_id}/{display_names}.json")
+        return feedback_data
     
-    present_sections = {key: True for key, value in data.items() if value and key in ["History", "Findings", "Impression"]}
-    
-    sent_stats, cat_stats, missing_sents = {}, {}, {}
-
-    norm_ent_stats = defaultdict(recursive_defaultdict)  # Updated
-
-    for sec, df in dfs.items():       
-        if sec == 'HIST':
-            section_texts = data.get('History', "")
-        elif sec == 'FIND':
-            section_texts = data.get('Findings', "")
-        else:
-            section_texts = data.get('Impression', "")
-            
-        section_sents = custom_sent_tokenize(section_texts)
-        
-        if 'sent' in df.columns:
-            sent_counts = df['sent'].value_counts().to_dict()
-            sent_stats[sec] = sent_counts
-            
-            sents_from_annos = list(set(df['sent']))
-            sents_from_annos_tokenized = tokenize_annotations(sents_from_annos)
-            
-            missing_sents_for_section = [sent for sent in section_sents if sent not in sents_from_annos_tokenized]
-            if missing_sents_for_section:
-                missing_sents[sec] = missing_sents_for_section    
-    
-        if 'cat' in df.columns:
-            cat_counts = df['cat'].value_counts().to_dict()
-            cat_stats[sec] = cat_counts
-            
-            # if 'ROF-PATH' in cat_counts.keys():
-            #     if 'norm_ent' in df.columns:
-            #         norm_ent_counts = df[df['cat'] == 'ROF-PATH']['norm_ent'].value_counts().to_dict()
-            if 'cat' in df.columns and 'norm_ent' in df.columns:
-                for _, row in df.iterrows():
-                    cat = row['cat']
-                    norm_ent = row['norm_ent']
-                    if not isinstance(norm_ent_stats[sec][cat][norm_ent], int):  # Check if the existing value is an int
-                        norm_ent_stats[sec][cat][norm_ent] = 0  # If not, initialize it to 0
-                    norm_ent_stats[sec][cat][norm_ent] += 1  # Increment
-    
-    return present_sections, sent_stats, cat_stats, dict(norm_ent_stats), missing_sents  # Assuming you want to return these
-
 
 def display_data(data):
     sections = {
@@ -126,7 +126,7 @@ def display_data(data):
         reordered_dict = {k: annotation[k] for k in desired_order if k in annotation}
         reordered_annotations.append(reordered_dict)
 
-    print("reordered_annotations", reordered_annotations)
+    # print("reordered_annotations", reordered_annotations)
 
     # annotations가 문자열 형태라면 JSON 객체로 변환
     if isinstance(annotations, str):
@@ -199,7 +199,31 @@ if st.session_state.reviewer_name:
     selected_display_name = st.sidebar.selectbox('Select a JSON file:', display_names)
 
     selected_file = next(f for f in file_structure[selected_patient] if os.path.basename(f).replace('.json', '') in selected_display_name)
-    previous_feedback = load_feedback(selected_patient, selected_display_name)
+
+    # Initialize session_state if it doesn't exist
+    if 'last_selected_file' not in st.session_state:
+        st.session_state.last_selected_file = None
+
+    if 'additional_feedback_count' not in st.session_state:
+        st.session_state.additional_feedback_count = {}
+
+    if 'checkbox_states' not in st.session_state:
+        st.session_state.checkbox_states = {}
+
+    # Check if selected_file has changed
+    if st.session_state.last_selected_file != selected_file:
+        # Reset the previous_feedback and additional_feedback_count
+        
+        previous_feedback = load_feedback(selected_patient, selected_display_name)
+        st.session_state.additional_feedback_count = {}
+        st.session_state.checkbox_states = {}
+    else:
+        # 이전에 저장한 피드백이 있다면 불러옴
+        previous_feedback = load_feedback(selected_patient, selected_display_name)
+        # print("previous_feedback", previous_feedback)
+
+    # Update last_selected_file in session_state
+    st.session_state.last_selected_file = selected_file
 
     # Load and display selected JSON data
     data = load_json(selected_file)
@@ -209,7 +233,7 @@ if st.session_state.reviewer_name:
     present_sections, sent_stats, cat_stats, norm_ent_stats, missing_sents = get_statistics(data, dfs)
 
     # 파일 통계 섹션 시작
-    with st.expander("**Show File Statistics**"):
+    with st.expander(f"**Show File Statistics: {len(missing_sents)} Missing Sents**"):
         #1. 'CAT'의 value 통계 출력
         st.write("CAT stats:")
         section_to_cat_and_norm_ent = defaultdict(list)
@@ -230,88 +254,113 @@ if st.session_state.reviewer_name:
         st.write(f"{len(missing_sents)} Missing Sents")
         for sec, sents in missing_sents.items():
             st.write(f"  - {sec}: {', '.join(sents)}")
-                        
+    
+
     feedback_data = {}
     correct_rows = {}
+    # additional_feedback_count = {}  # Commented this out
+    feedback_columns = ['include', 'delete', 'modify', 'opinion']
 
     for sec, content in sections.items():
         st.write(f"**{sec}:** {content}")
-        
+
         current_df = dfs[sec]
-        filtered_df = current_df.drop(columns=["sec", "sent_idx"])
-        
-        # 재정렬하려는 열의 순서를 리스트로 지정
-        desired_column_order = ['ori_ent', 'norm_ent', 'cat', 'exist', 'loc', 'asso', 'appr', 'tmp', 'level', 'sent']
+        columns_to_drop = ["sec", "sent_idx"]
+        columns_to_drop = [col for col in columns_to_drop if col in current_df.columns]
+        if columns_to_drop:
+            filtered_df = current_df.drop(columns=columns_to_drop)
 
-        # DataFrame에 실제로 존재하는 열만 필터링
-        available_columns = [col for col in desired_column_order if col in current_df.columns]
+            with st.expander(f"**{sec} DataFrame**"):
+                st.write(filtered_df)
 
-        # 열을 새로운 순서로 재정렬
-        filtered_df = filtered_df[available_columns]
-        
-        with st.expander("**Show DataFrame**"):
-            st.write(filtered_df)
+            feedback_data[sec] = {}
+            correct_rows[sec] = {}
+            # additional_feedback_count[sec] = {}  # Commented this out
 
-        feedback_data[sec] = {}
-        correct_rows[sec] = {}
+            if previous_feedback:
+                st.write("Previous Results:")
+                annotations_list = previous_feedback.get('annotations', [])
+                desired_order = ['ent', 'cat', 'exist', 'rel', 'attr', 'sent']
+                reordered_annotations = []
 
-        for index, row in current_df.iterrows():
-            
-            st.write(f"  - {sec} Row {index}: {annotations_list[index]}")
+                sec_list = [annotation for annotation in annotations_list if annotation['sec'] == sec]
+                
+                for annotation in sec_list:
+                    reordered_dict = {k: annotation[k] for k in desired_order if k in annotation}
+                    reordered_annotations.append(reordered_dict)
+                
+                for annotation in reordered_annotations:
+                    st.write(f"  - {annotation}")
 
-            feedback_data[sec][index] = {}
-            correct_rows[sec][index] = {}
+            with st.expander(f"**Review {sec}**"):
+                for index, row in current_df.iterrows():
+                    st.write(f"  - {sec} Row {index}: {annotations_list[index]}")
+                    feedback_data[sec][index] = {}
+                    correct_rows[sec][index] = {}
 
-            # Select columns for feedback (1st onwards)
-            feedback_columns = ['include', 'delete', 'modify']
+                    # Initialize session_state for the section and index
+                    if sec not in st.session_state.additional_feedback_count:
+                        st.session_state.additional_feedback_count[sec] = {}
+                    st.session_state.additional_feedback_count[sec].setdefault(index, {col: 1 for col in feedback_columns})
 
-            col_list = st.columns(len(feedback_columns) + 1)  # Extra column for overall 'correct' checkbox
+                    col_list = st.columns(len(feedback_columns) + 1)
+                    correct_key = f"{sec}_correct_{index}"
+                    overall_correct = col_list[0].checkbox(f"Correct all", 
+                                                            value=st.session_state.checkbox_states.get(correct_key, False),  # 상태 가져오기
+                                                            key=correct_key
+                                                        )
+                    st.session_state.checkbox_states[correct_key] = overall_correct
 
-            # Overall 'correct' checkbox
-            correct_key = f"{sec}_correct_{index}"
-            overall_correct = col_list[0].checkbox(f"Correct all", key=correct_key)
-            
-            if overall_correct:
-                correct_rows[sec][index]['overall'] = True
-                continue  # Skip the rest of the loop for this row if 'Overall Correct' is checked
-            else:
-                correct_rows[sec][index]['overall'] = False
 
-                for col_num, col_name in enumerate(feedback_columns):
-                    # Create unique keys by including the section name, row index and column name
-                    correct_key = f"{sec}_correct_{index}_{col_name}"
-                    feedback_key = f"{sec}_feedback_{index}_{col_name}"
-
-                    correct = col_list[col_num + 1].checkbox(f"{col_name}", key=correct_key)
-
-                    if correct:
-                        correct_rows[sec][index][col_name] = True
+                    if overall_correct:
+                        correct_rows[sec][index]['overall'] = True
                     else:
-                        correct_rows[sec][index][col_name] = False
-                        feedback = col_list[col_num + 1].text_input(f"", key=feedback_key)
-                        feedback_data[sec][index][col_name] = feedback
+                        correct_rows[sec][index]['overall'] = False
 
+                        for col_num, col_name in enumerate(feedback_columns):
+                            nested_col_list = col_list[col_num + 1].columns(2)
+                            correct_key = f"{sec}_correct_{index}_{col_name}"
+                            correct = nested_col_list[0].checkbox(f"{col_name}", key=correct_key)
 
-    if st.button('Submit Feedback'):
-        save_feedback(selected_patient, selected_display_name, feedback_data, correct_rows)
-        st.write("Feedback submitted!")
-        st.experimental_rerun()
+                            if correct:
+                                correct_rows[sec][index][col_name] = True
+                            else:
+                                if nested_col_list[1].button(f"Add", key=f"{sec}_add_more_{index}_{col_name}"):
+                                    st.session_state.additional_feedback_count[sec][index][col_name] += 1
 
-    # 이전 피드백을 보다 명확하게 표시
-    if previous_feedback:
-        st.write("Previous Feedback:")
-        for sec, index, feedback in previous_feedback.get('feedback', []):
-            st.write(f"  - Section {sec}, Row {index}: {feedback}")
+                                if nested_col_list[1].button(f"Remove", key=f"{sec}_remove_{index}_{col_name}"):
+                                    if st.session_state.additional_feedback_count[sec][index][col_name] > 1:
+                                        st.session_state.additional_feedback_count[sec][index][col_name] -= 1
 
-        st.write("Previously Marked Correct Rows:")
-        for sec, index in previous_feedback.get('correct_rows', []):
-            st.write(f"  - Section {sec}, Row {index}")
+                                # Dynamically generate additional feedback text boxes
+                                for i in range(2, st.session_state.additional_feedback_count[sec][index][col_name] + 1):
+                                    additional_feedback_key = f"{sec}_feedback_{index}_{col_name}_{i-1}"
+                                    additional_feedback = col_list[col_num + 1].text_input(f"{col_name} {i-1}", key=additional_feedback_key)
+                                    feedback_data[sec][index][f"{col_name}_{i-1}"] = additional_feedback
 
-    else:
-        st.write("No feedback found for this selection.")
+                # Added a unique key for the Submit Feedback button
+                if st.button('Submit Feedback', key=f"unique_key_for_submit_button_{sec}"):
+                    save_feedback(selected_patient, selected_display_name, feedback_data, correct_rows, feedback_columns)
+                    # st.experimental_rerun()
+                    now_feedback = load_feedback(selected_patient, selected_display_name)
 
+                    st.write("Updated Results:")
 
+                    # If now_feedback is already a Python dict, no need for json.loads
+                    annotations_list = now_feedback.get('annotations', [])
+                    desired_order = ['ent', 'cat', 'exist', 'rel', 'attr', 'sent']
+                    reordered_annotations = []
 
+                    sec_list = [annotation for annotation in annotations_list if annotation['sec'] == sec]
+                    
+                    for annotation in sec_list:
+                        reordered_dict = {k: annotation[k] for k in desired_order if k in annotation}
+                        reordered_annotations.append(reordered_dict)
+                    
+                    for annotation in reordered_annotations:
+                        st.write(f"  - {annotation}")
 
+                else:
+                    st.write("No feedback found for this section.")
 
-
+                

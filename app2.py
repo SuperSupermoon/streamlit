@@ -9,10 +9,55 @@ nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 import re
 
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+
+# 서비스 계정 키 JSON 파일 경로
+SERVICE_ACCOUNT_FILE = './gdrive.json'
+SCOPES = ['https://www.googleapis.com/auth/drive']
+
+credentials = Credentials.from_service_account_file('path/to/credentials.json', scopes=["https://www.googleapis.com/auth/drive.file"])
+drive_service = build('drive', 'v3', credentials=credentials)
+
 json_folder_path = './test/'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
-
 st.set_page_config(layout="wide")
+
+
+# StringIO 객체를 사용하여 Google Drive에 파일 업로드
+def upload_to_drive(filename, filedata, mimetype, folder_id=None):
+    file_metadata = {'name': filename}
+    
+    if folder_id:
+        file_metadata['parents'] = [folder_id]
+        
+    if isinstance(filedata, io.StringIO):
+        media = MediaIoBaseUpload(filedata, mimetype=mimetype, resumable=True)
+    else:
+        media = MediaFileUpload(filedata, mimetype=mimetype)
+        
+    request = drive_service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields='id'
+    )
+    file = request.execute()
+    print(f"Uploaded file with ID {file.get('id')}")
+
+
+
+def create_folder(folder_name, parent_folder_id=None):
+    folder_metadata = {
+        'name': folder_name,
+        'mimeType': 'application/vnd.google-apps.folder'
+    }
+    if parent_folder_id:
+        folder_metadata['parents'] = [parent_folder_id]
+        
+    folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+    return folder['id']
+
 
 def recursive_defaultdict():
     return defaultdict(recursive_defaultdict)
@@ -24,6 +69,7 @@ def defaultdict_to_dict(d):
 
 def remove_quotes_with_re(text):
     return re.sub(r'^["\']|["\']$|^["\'],|["\'],$','', text)
+
 
 def save_feedback(patient_id, display_names, feedback_data, correct_rows, feedback_columns=['include', 'delete', 'modify', 'opinion']):
     original_name = display_names.split('_')[-1]
@@ -107,11 +153,24 @@ def save_feedback(patient_id, display_names, feedback_data, correct_rows, feedba
 
     # Create directories if they don't exist
     reviewer_name = st.session_state.reviewer_name
-    os.makedirs(f"./feedback/{reviewer_name}/{patient_id}", exist_ok=True)
+    ######## When I use local server ######
+    # os.makedirs(f"./feedback/{reviewer_name}/{patient_id}", exist_ok=True)
     
-    # Save the new JSON
-    with open(f"./feedback/{reviewer_name}/{patient_id}/{display_names}.json", "w") as f:
-        json.dump(new_json, f, indent=4)
+    # # Save the new JSON
+    # with open(f"./feedback/{reviewer_name}/{patient_id}/{display_names}.json", "w") as f:
+    #     json.dump(new_json, f, indent=4)
+    
+    ######## When I use external driver ######
+    reviewer_folder_id = create_folder(reviewer_name)
+    patient_folder_id = create_folder(patient_id, reviewer_folder_id)
+
+    new_json_str = json.dumps(new_json, indent=4)
+    sio = io.StringIO()
+    json.dump(new_json, sio)
+    sio.seek(0)
+    upload_to_drive(f"{display_names}.json", sio, 'application/json', patient_folder_id)
+
+
 
 
 def load_feedback(patient_id, display_names):
