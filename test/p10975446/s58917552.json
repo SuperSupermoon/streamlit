@@ -1,0 +1,9 @@
+{
+    "subject": "p10975446",
+    "study": "s58917552",
+    "sequence": 3,
+    "History": "",
+    "Findings": "Cardiac silhouette remains enlarged and is accompanied by persistent pulmonary vascular congestion and interstitial edema. Patchy bibasilar atelectasis also appears similar compared to the prior study.",
+    "Impression": "",
+    "annotations": "[\n    {\"ent\": \"cardiac silhouette|cardiac silhouette\", \"sec\": \"FIND\", \"sent\": \"Cardiac silhouette remains enlarged and is accompanied by persistent pulmonary vascular congestion and interstitial edema.\", \"sent_idx\": 1, \"cat\": \"ROF-ANAT\", \"exist\": \"DP|remains\", \"rel\": {\"loc\": \"cardiac silhouette\"}, \"attr\": {\"appr\": \"size|enlarged\", \"tmp\": \"nchg|remains\"}},\n    {\"ent\": \"pulmonary vascular congestion|pulmonary vascular congestion\", \"sec\": \"FIND\", \"sent\": \"Cardiac silhouette remains enlarged and is accompanied by persistent pulmonary vascular congestion and interstitial edema.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"DP|accompanied\", \"rel\": {}, \"attr\": {\"tmp\": \"nchg|persistent\"}},\n    {\"ent\": \"interstitial edema|interstitial edema\", \"sec\": \"FIND\", \"sent\": \"Cardiac silhouette remains enlarged and is accompanied by persistent pulmonary vascular congestion and interstitial edema.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"DP|accompanied\", \"rel\": {}, \"attr\": {\"tmp\": \"nchg|persistent\"}},\n    {\"ent\": \"atelectasis|atelectasis\", \"sec\": \"FIND\", \"sent\": \"Patchy bibasilar atelectasis also appears similar compared to the prior study.\", \"sent_idx\": 2, \"cat\": \"ROF-PATH\", \"exist\": \"DP|appears\", \"rel\": {\"loc\": \"bibasilar\"}, \"attr\": {\"appr\": \"dist|patchy\", \"tmp\": \"nchg|similar\"}}\n]"
+}

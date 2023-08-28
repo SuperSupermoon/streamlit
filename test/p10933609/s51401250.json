@@ -1,0 +1,9 @@
+{
+    "subject": "p10933609",
+    "study": "s51401250",
+    "sequence": 2,
+    "History": "NG tube placement.",
+    "Findings": "In comparison with the study of, the Dobbhoff tube now extends to the distal stomach. The tube takes an unusual course, raising the possibility of previous gastric surgery. When compared to the study of, the extensive bilateral opacification has substantially decreased. Some of the residual may merely reflect fibrotic healing.",
+    "Impression": "",
+    "annotations": "[\n    {\"ent\": \"NG tube|NG tube\", \"sec\": \"HIST\", \"sent\": \"NG tube placement.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|placement\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"Dobbhoff tube|Dobbhoff tube\", \"sec\": \"FIND\", \"sent\": \"In comparison with the study of, the Dobbhoff tube now extends to the distal stomach.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|extends\", \"rel\": {\"loc\": \"distal stomach\"}, \"attr\": {\"tmp\": \"emerg|now\"}},\n    {\"ent\": \"gastric surgery|gastric surgery\", \"sec\": \"FIND\", \"sent\": \"The tube takes an unusual course, raising the possibility of previous gastric surgery.\", \"sent_idx\": 2, \"cat\": \"COF\", \"exist\": \"TP|possibility\", \"rel\": {\"asso\": \"DEV|Dobbhoff tube\"}, \"attr\": {\"tmp\": \"emerg|previous\"}},\n    {\"ent\": \"opacification|opacity\", \"sec\": \"FIND\", \"sent\": \"When compared to the study of, the extensive bilateral opacification has substantially decreased.\", \"sent_idx\": 3, \"cat\": \"ROF-PATH\", \"exist\": \"DP|has\", \"rel\": {\"loc\": \"bilateral lung\"}, \"attr\": {\"appr\": \"dist|extensive\", \"tmp\": \"improved|decreased\"}},\n    {\"ent\": \"fibrotic healing|fibrosis\", \"sec\": \"FIND\", \"sent\": \"Some of the residual may merely reflect fibrotic healing.\", \"sent_idx\": 4, \"cat\": \"ROF-PATH\", \"exist\": \"TP|may\", \"rel\": {}, \"attr\": {}}\n]"
+}
