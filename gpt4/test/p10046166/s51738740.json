@@ -1,0 +1,9 @@
+{
+    "subject": "p10046166",
+    "study": "s51738740",
+    "sequence": 5,
+    "History": "-year-old with near syncope, low blood pressure on steroids, assess for pneumonia.",
+    "Findings": "",
+    "Impression": "No acute intrathoracic process.",
+    "annotations": "[\n    {\"ent\": \"syncope|syncope\", \"sec\": \"HIST\", \"sent\": \"-year-old with near syncope, low blood pressure on steroids, assess for pneumonia.\", \"sent_idx\": 1, \"cat\": \"SYM\", \"exist\": \"DP|with\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"blood pressure|blood pressure\", \"sec\": \"HIST\", \"sent\": \"-year-old with near syncope, low blood pressure on steroids, assess for pneumonia.\", \"sent_idx\": 1, \"cat\": \"COF\", \"exist\": \"DP|low\", \"rel\": {}, \"attr\": {\"appr\": \"size|low\"}},\n    {\"ent\": \"pneumonia|pneumonia\", \"sec\": \"HIST\", \"sent\": \"-year-old with near syncope, low blood pressure on steroids, assess for pneumonia.\", \"sent_idx\": 1, \"cat\": \"RSF\", \"exist\": \"TP|assess for\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"intrathoracic process|intrathoracic process\", \"sec\": \"IMPR\", \"sent\": \"No acute intrathoracic process.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"DN|No\", \"rel\": {}, \"attr\": {\"tmp\": \"emerg|acute\"}}\n]"
+}

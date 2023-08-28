@@ -1,0 +1,9 @@
+{
+    "subject": "p10439781",
+    "study": "s53567394",
+    "sequence": 3,
+    "History": "Hypotension, evaluation for interval change.",
+    "Findings": "As compared to previous radiograph, the patient has been extubated. Otherwise, there is no relevant change. The bilateral massive parenchymal opacities are constant, constant moderate cardiomegaly.",
+    "Impression": "",
+    "annotations": "[\n    {\"ent\": \"hypotension|hypotension\", \"sec\": \"HIST\", \"sent\": \"Hypotension, evaluation for interval change.\", \"sent_idx\": 1, \"cat\": \"SYM\", \"exist\": \"DP|\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"extubated|extubation\", \"sec\": \"FIND\", \"sent\": \"As compared to previous radiograph, the patient has been extubated.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|has been\", \"rel\": {}, \"attr\": {\"tmp\": \"emerg|new\"}},\n    {\"ent\": \"opacities|opacity\", \"sec\": \"FIND\", \"sent\": \"The bilateral massive parenchymal opacities are constant, constant moderate cardiomegaly.\", \"sent_idx\": 2, \"cat\": \"ROF-PATH\", \"exist\": \"DP|are\", \"rel\": {\"loc\": \"bilateral lung\"}, \"attr\": {\"appr\": \"size|massive\", \"tmp\": \"nchg|constant\"}},\n    {\"ent\": \"cardiomegaly|cardiomegaly\", \"sec\": \"FIND\", \"sent\": \"The bilateral massive parenchymal opacities are constant, constant moderate cardiomegaly.\", \"sent_idx\": 2, \"cat\": \"ROF-PATH\", \"exist\": \"DP|are\", \"rel\": {\"loc\": \"cardiac silhouette\"}, \"attr\": {\"level\": \"sev|moderate\", \"tmp\": \"nchg|constant\"}}\n]"
+}

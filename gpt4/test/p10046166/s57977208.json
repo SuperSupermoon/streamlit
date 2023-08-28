@@ -1,0 +1,9 @@
+{
+    "subject": "p10046166",
+    "study": "s57977208",
+    "sequence": 2,
+    "History": "Post-procedure, to assess for pneumothorax.",
+    "Findings": "In comparison with the study of, there is no evidence of pneumothorax. Continued low lung volumes with substantial mass in the right paratracheal region.",
+    "Impression": "",
+    "annotations": "[\n    {\"ent\": \"pneumothorax|pneumothorax\", \"sec\": \"HIST\", \"sent\": \"Post-procedure, to assess for pneumothorax.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"TP|to assess for\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"pneumothorax|pneumothorax\", \"sec\": \"FIND\", \"sent\": \"In comparison with the study of, there is no evidence of pneumothorax.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"DN|no evidence of\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"volumes|volume\", \"sec\": \"FIND\", \"sent\": \"Continued low lung volumes with substantial mass in the right paratracheal region.\", \"sent_idx\": 2, \"cat\": \"ROF-ANAT\", \"exist\": \"DP|Continued\", \"rel\": {\"loc\": \"left lung, right lung\"}, \"attr\": {\"appr\": \"size|low\", \"tmp\": \"nchg|continued\"}},\n    {\"ent\": \"mass|mass\", \"sec\": \"FIND\", \"sent\": \"Continued low lung volumes with substantial mass in the right paratracheal region.\", \"sent_idx\": 2, \"cat\": \"ROF-PATH\", \"exist\": \"DP|with\", \"rel\": {\"loc\": \"right paratracheal region\"}, \"attr\": {\"appr\": \"size|substantial\"}}\n]"
+}

@@ -1,0 +1,9 @@
+{
+    "subject": "p10886362",
+    "study": "s54962274",
+    "sequence": 6,
+    "History": "AVR, AFib, tamponade effusion.",
+    "Findings": "Compared to the film from earlier the same day, there is no significant interval change.",
+    "Impression": "",
+    "annotations": "[\n    {\"ent\": \"AVR|AVR\", \"sec\": \"HIST\", \"sent\": \"AVR, AFib, tamponade effusion.\", \"sent_idx\": 1, \"cat\": \"COF\", \"exist\": \"DP|\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"AFib|AFib\", \"sec\": \"HIST\", \"sent\": \"AVR, AFib, tamponade effusion.\", \"sent_idx\": 1, \"cat\": \"COF\", \"exist\": \"DP|\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"tamponade effusion|pericardial effusion\", \"sec\": \"HIST\", \"sent\": \"AVR, AFib, tamponade effusion.\", \"sent_idx\": 1, \"cat\": \"COF\", \"exist\": \"DP|\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"interval change|change\", \"sec\": \"FIND\", \"sent\": \"Compared to the film from earlier the same day, there is no significant interval change.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"DN|no\", \"rel\": {}, \"attr\": {\"level\": \"sev|significant\"}}\n]"
+}

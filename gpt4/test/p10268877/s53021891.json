@@ -1,0 +1,9 @@
+{
+    "subject": "p10268877",
+    "study": "s53021891",
+    "sequence": 9,
+    "History": "-year-old man status post PEA arrest, intubated. Assess for change.",
+    "Findings": "",
+    "Impression": "Decreased left basilar consolidation with mild pulmonary edema. Possible pulmonary arterial hypertension.",
+    "annotations": "[\n    {\"ent\": \"PEA arrest|PEA arrest\", \"sec\": \"HIST\", \"sent\": \"-year-old man status post PEA arrest, intubated.\", \"sent_idx\": 1, \"cat\": \"COF\", \"exist\": \"DP|status post\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"intubated|intubation\", \"sec\": \"HIST\", \"sent\": \"-year-old man status post PEA arrest, intubated.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"consolidation|consolidation\", \"sec\": \"IMPR\", \"sent\": \"Decreased left basilar consolidation with mild pulmonary edema.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"DP|decreased\", \"rel\": {\"loc\": \"left lower lung zone\"}, \"attr\": {\"tmp\": \"improved|decreased\"}},\n    {\"ent\": \"pulmonary edema|pulmonary edema\", \"sec\": \"IMPR\", \"sent\": \"Decreased left basilar consolidation with mild pulmonary edema.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"DP|with\", \"rel\": {\"loc\": \"left lower lung zone\"}, \"attr\": {\"level\": \"sev|mild\"}},\n    {\"ent\": \"pulmonary arterial hypertension|pulmonary hypertension\", \"sec\": \"IMPR\", \"sent\": \"Possible pulmonary arterial hypertension.\", \"sent_idx\": 2, \"cat\": \"RSF\", \"exist\": \"TP|possible\", \"rel\": {}, \"attr\": {}}\n]"
+}

@@ -1,0 +1,9 @@
+{
+    "subject": "p10975446",
+    "study": "s56390608",
+    "sequence": 8,
+    "History": "Intubated for respiratory distress.",
+    "Findings": "Again seen is low position of the ET tube, 14 cm above the carina. The appearance of the lungs is unchanged. Right IJ line tip at cavoatrial junction is unchanged.",
+    "Impression": "",
+    "annotations": "[\n    {\"ent\": \"respiratory distress|respiratory distress\", \"sec\": \"HIST\", \"sent\": \"Intubated for respiratory distress.\", \"sent_idx\": 1, \"cat\": \"SYM\", \"exist\": \"DP|for\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"ET tube|endotracheal tube\", \"sec\": \"FIND\", \"sent\": \"Again seen is low position of the ET tube, 14 cm above the carina.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|seen\", \"rel\": {\"loc\": \"carina\"}, \"attr\": {\"appr\": \"size|low, size|14 cm\"}},\n    {\"ent\": \"lungs|lung\", \"sec\": \"FIND\", \"sent\": \"The appearance of the lungs is unchanged.\", \"sent_idx\": 2, \"cat\": \"ROF-ANAT\", \"exist\": \"DN|unchanged\", \"rel\": {\"loc\": \"left lung, right lung\"}, \"attr\": {\"tmp\": \"nchg|unchanged\"}},\n    {\"ent\": \"IJ line|internal jugular line\", \"sec\": \"FIND\", \"sent\": \"Right IJ line tip at cavoatrial junction is unchanged.\", \"sent_idx\": 3, \"cat\": \"DEV\", \"exist\": \"DN|unchanged\", \"rel\": {\"loc\": \"cavoatrial junction\"}, \"attr\": {\"tmp\": \"nchg|unchanged\"}}\n]"
+}
