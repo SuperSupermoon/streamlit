@@ -4,6 +4,8 @@ import pandas as pd
 import json
 import copy
 from collections import defaultdict
+import nltk
+nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 import re
 
