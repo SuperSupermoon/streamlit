@@ -1,9 +1,0 @@
-{
-    "subject": "p10523725",
-    "study": "s59977435",
-    "sequence": 6,
-    "History": "Marked dyspnea on exertion.",
-    "Findings": "PA and lateral upright chest radiographs were reviewed with comparison to. Post-sternotomy wires are stable. Tortuous aorta is re-demonstrated. Heart size and mediastinum are unchanged. Pleural thickening at the right costophrenic angle is noted. No new abnormalities as compared to prior examinations seen.",
-    "Impression": "",
-    "annotations": "[\n    {\"ent\": \"dyspnea|shortness of breath\", \"sec\": \"HIST\", \"sent\": \"Marked dyspnea on exertion.\", \"sent_idx\": 1, \"cat\": \"SYM\", \"exist\": \"DP|Marked\", \"rel\": {}, \"attr\": {\"level\": \"sev|marked\"}},\n    {\"ent\": \"wires|wires\", \"sec\": \"FIND\", \"sent\": \"Post-sternotomy wires are stable.\", \"sent_idx\": 2, \"cat\": \"DEV\", \"exist\": \"DP|are\", \"rel\": {}, \"attr\": {\"tmp\": \"impr|stable\"}},\n    {\"ent\": \"aorta|aorta\", \"sec\": \"FIND\", \"sent\": \"Tortuous aorta is re-demonstrated.\", \"sent_idx\": 3, \"cat\": \"ROF-ANAT\", \"exist\": \"DP|is\", \"rel\": {}, \"attr\": {\"appr\": \"mor|tortuous\"}},\n    {\"ent\": \"heart|heart\", \"sec\": \"FIND\", \"sent\": \"Heart size and mediastinum are unchanged.\", \"sent_idx\": 4, \"cat\": \"ROF-ANAT\", \"exist\": \"DN|are\", \"rel\": {}, \"attr\": {\"tmp\": \"nchg|unchanged\"}},\n    {\"ent\": \"mediastinum|mediastinum\", \"sec\": \"FIND\", \"sent\": \"Heart size and mediastinum are unchanged.\", \"sent_idx\": 4, \"cat\": \"ROF-ANAT\", \"exist\": \"DN|are\", \"rel\": {}, \"attr\": {\"tmp\": \"nchg|unchanged\"}},\n    {\"ent\": \"pleural thickening|thickening\", \"sec\": \"FIND\", \"sent\": \"Pleural thickening at the right costophrenic angle is noted.\", \"sent_idx\": 5, \"cat\": \"ROF-PATH\", \"exist\": \"DP|is\", \"rel\": {\"loc\": \"right costophrenic angle\"}, \"attr\": {}}\n]"
-}

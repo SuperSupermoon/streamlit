@@ -1,9 +1,0 @@
-{
-    "subject": "p10886362",
-    "study": "s50301215",
-    "sequence": 7,
-    "History": "Status post AVR.",
-    "Findings": "The endotracheal tube is too high, at the thoracic inlet. This finding was called to the CCU nurse, at 5:00 pm. At the time of dictating this report by Dr. Otherwise, the appearance of the lungs is unchanged. Pacemaker and left IJ line are unchanged.",
-    "Impression": "",
-    "annotations": "[\n    {\"ent\": \"AVR|AVR\", \"sec\": \"HIST\", \"sent\": \"Status post AVR.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|status post\", \"rel\": {}, \"attr\": {\"tmp\": \"emerg|post\"}},\n    {\"ent\": \"endotracheal tube|endotracheal tube\", \"sec\": \"FIND\", \"sent\": \"The endotracheal tube is too high, at the thoracic inlet.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|is\", \"rel\": {\"loc\": \"thoracic inlet\"}, \"attr\": {\"appr\": \"size|high\"}},\n    {\"ent\": \"lungs|lung\", \"sec\": \"FIND\", \"sent\": \"Otherwise, the appearance of the lungs is unchanged.\", \"sent_idx\": 3, \"cat\": \"ROF-ANAT\", \"exist\": \"DN|unchanged\", \"rel\": {\"loc\": \"left lung, right lung\"}, \"attr\": {\"tmp\": \"nchg|unchanged\"}},\n    {\"ent\": \"pacemaker|pacemaker\", \"sec\": \"FIND\", \"sent\": \"Pacemaker and left IJ line are unchanged.\", \"sent_idx\": 4, \"cat\": \"DEV\", \"exist\": \"DN|unchanged\", \"rel\": {}, \"attr\": {\"tmp\": \"nchg|unchanged\"}},\n    {\"ent\": \"IJ line|IJ line\", \"sec\": \"FIND\", \"sent\": \"Pacemaker and left IJ line are unchanged.\", \"sent_idx\": 4, \"cat\": \"DEV\", \"exist\": \"DN|unchanged\", \"rel\": {\"loc\": \"left IJ\"}, \"attr\": {\"tmp\": \"nchg|unchanged\"}}\n]"
-}

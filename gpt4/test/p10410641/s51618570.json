@@ -1,9 +1,0 @@
-{
-    "subject": "p10410641",
-    "study": "s51618570",
-    "sequence": 13,
-    "History": "Followup.",
-    "Findings": "The bilateral pleural pigtail catheters are in unchanged position. The right pneumothorax has an unchanged dimension of approximately 1 cm. There is no evidence of tension. No other changes.",
-    "Impression": "",
-    "annotations": "[\n    {\"ent\": \"pleural pigtail catheters|pigtail catheter\", \"sec\": \"FIND\", \"sent\": \"The bilateral pleural pigtail catheters are in unchanged position.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|are\", \"rel\": {\"loc\": \"right pleural space, left pleural space\"}, \"attr\": {\"tmp\": \"nchg|unchanged\"}},\n    {\"ent\": \"pneumothorax|pneumothorax\", \"sec\": \"FIND\", \"sent\": \"The right pneumothorax has an unchanged dimension of approximately 1 cm.\", \"sent_idx\": 2, \"cat\": \"ROF-PATH\", \"exist\": \"DP|has\", \"rel\": {\"loc\": \"right lung\"}, \"attr\": {\"tmp\": \"nchg|unchanged\", \"appr\": \"size|1 cm\"}},\n    {\"ent\": \"tension|tension\", \"sec\": \"FIND\", \"sent\": \"There is no evidence of tension.\", \"sent_idx\": 3, \"cat\": \"ROF-PATH\", \"exist\": \"DN|no\", \"rel\": {}, \"attr\": {}}\n]"
-}
