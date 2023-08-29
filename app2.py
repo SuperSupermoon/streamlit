@@ -17,8 +17,13 @@ from googleapiclient.http import MediaFileUpload
 from googleapiclient.http import MediaIoBaseUpload
 
 
-credentials = Credentials.from_service_account_info(st.secrets[SERVICE_ACCOUNT_FILE], scopes=st.secrets[SCOPES])
+service_account_info = st.secrets["SERVICE_ACCOUNT_FILE"]
+scopes = st.secrets["SCOPES"]["scope"]
+
+
+credentials = Credentials.from_service_account_info(service_account_info, scopes=scopes)
 drive_service = build('drive', 'v3', credentials=credentials)
+
 
 json_folder_path = './test/'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
