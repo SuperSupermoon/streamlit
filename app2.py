@@ -8,16 +8,16 @@ import nltk
 nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 import re
+import io
+import tempfile
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaIoBaseUpload
 
-# 서비스 계정 키 JSON 파일 경로
-SERVICE_ACCOUNT_FILE = './gdrive.json'
-SCOPES = ['https://www.googleapis.com/auth/drive']
 
-credentials = Credentials.from_service_account_file('path/to/credentials.json', scopes=["https://www.googleapis.com/auth/drive.file"])
+credentials = Credentials.from_service_account_info(st.secrets[SERVICE_ACCOUNT_FILE], scopes=st.secrets[SCOPES])
 drive_service = build('drive', 'v3', credentials=credentials)
 
 json_folder_path = './test/'
@@ -25,17 +25,15 @@ json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder
 st.set_page_config(layout="wide")
 
 
-# StringIO 객체를 사용하여 Google Drive에 파일 업로드
+# Google Drive에 파일 업로드
+# upload_to_drive(f"{display_names}.json", temp_name, 'application/json', patient_folder_id)
 def upload_to_drive(filename, filedata, mimetype, folder_id=None):
     file_metadata = {'name': filename}
     
     if folder_id:
         file_metadata['parents'] = [folder_id]
         
-    if isinstance(filedata, io.StringIO):
-        media = MediaIoBaseUpload(filedata, mimetype=mimetype, resumable=True)
-    else:
-        media = MediaFileUpload(filedata, mimetype=mimetype)
+    media = MediaFileUpload(filedata, mimetype=mimetype)
         
     request = drive_service.files().create(
         body=file_metadata,
@@ -44,6 +42,7 @@ def upload_to_drive(filename, filedata, mimetype, folder_id=None):
     )
     file = request.execute()
     print(f"Uploaded file with ID {file.get('id')}")
+
 
 
 
@@ -137,7 +136,6 @@ def save_feedback(patient_id, display_names, feedback_data, correct_rows, feedba
                                     if isinstance(modified_annotation[k1], dict):
                                         modified_annotation[k1][k2] = v
                                     else:
-                                        # 이 경우 modified_annotation[k1]가 dict가 아니라고 가정하고 새 dict를 생성합니다.
                                         modified_annotation[k1] = {k2: v}
                                 else:
                                     modified_annotation[k1] = {k2: v}
@@ -161,14 +159,26 @@ def save_feedback(patient_id, display_names, feedback_data, correct_rows, feedba
     #     json.dump(new_json, f, indent=4)
     
     ######## When I use external driver ######
+    
     reviewer_folder_id = create_folder(reviewer_name)
     patient_folder_id = create_folder(patient_id, reviewer_folder_id)
 
+    # Serialize JSON to a string
     new_json_str = json.dumps(new_json, indent=4)
-    sio = io.StringIO()
-    json.dump(new_json, sio)
-    sio.seek(0)
-    upload_to_drive(f"{display_names}.json", sio, 'application/json', patient_folder_id)
+
+    # Create a temporary file and write the JSON string to it
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as tmp:
+        tmp.write(new_json_str)
+        temp_name = tmp.name
+
+    # Upload the file
+    upload_to_drive(f"{display_names}.json", temp_name, 'application/json', patient_folder_id)
+    
+    print("file uploaded to google drive!")
+    # Remove the temporary file
+    os.unlink(temp_name)
+
+
 
 
 
