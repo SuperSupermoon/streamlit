@@ -38,6 +38,7 @@ pyarrow==13.0.0
 pyasn1==0.5.0
 pyasn1-modules==0.3.0
 pydeck==0.8.0
+PyDrive @ git+https://github.com/googledrive/PyDrive.git@42022f9a1c48f435438fce74ad4032ec9f34cfd1
 Pygments==2.16.1
 Pympler==1.0.1
 pyparsing==3.1.1
