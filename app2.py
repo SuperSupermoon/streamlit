@@ -2,7 +2,6 @@ import streamlit as st
 import os
 import pandas as pd
 import json
-from pprint import pprint
 import copy
 from collections import defaultdict
 import nltk
@@ -10,7 +9,6 @@ nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 import re
 import io
-import ast 
 import tempfile
 
 from google.oauth2.service_account import Credentials
@@ -142,16 +140,36 @@ def find_and_map_values_by_index(key_to_find, output_dict1, output_dict2):
     return corresponding_key_in_output_dict1  # 해당하는 값이 없으면 None을 반환
 
 
+# def parse_string_to_dict(input_str):
+#     parsed_dict = {}
+    
+#     for match in re.finditer(r"(\w+):\s*([^,]*)", input_str):
+#         key, value = match.groups()       
+#         parsed_dict[key] = value.strip()  # 공백 제거
+    
+#     return parsed_dict
 
 
-def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['include', 'delete', 'modify', 'opinion']):
+def parse_string_to_dict(input_str):
+    parsed_dict = {}
+    # 불필요한 문자 제거
+    clean_str = re.sub(r"[}\]\n]", "", input_str)
+    
+    for match in re.finditer(r"(\w+):\s*([^,]*)(?:,|$)", clean_str, re.DOTALL):
+        key, value = match.groups()
+        parsed_dict[key.strip()] = value.strip()  # 공백 제거
+    
+    return parsed_dict
+
+
+def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['include', 'delete', 'modify', 'opinion'], valid_keys = ['ent', 'sec', 'exist', 'cat', 'sent', 'sent_idx', 'rel', 'loc', 'asso', 'attr', 'appr', 'level', 'tmp', 'opinion', 'norm_ent', 'ori_ent']):
+   
     original_name = display_names.split('_')[-1]
     original_json = load_json(f"./test/{patient_id}/{original_name}.json")
     new_json = copy.deepcopy(original_json)    
     annotations_list = json.loads(original_json['annotations'])
     new_annotate_list = []
     
-    itr_idx = 0
     for sec, sec_data in feedback_data.items():
         annot = [item for item in annotations_list if item['sec'] == sec]
         empty_indices = [index for index, value in sec_data.items() if not value]
@@ -160,12 +178,22 @@ def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['i
             error_message = f"Please fill in {sec} section data for the following indices: {indices_str}."
             st.error(error_message, icon="🚨")
             
-        for idx_str, feedback in sec_data.items():
-            idx = int(idx_str)
+        for idx_str, feedback in sec_data.items():           
+            if isinstance(idx_str, str):
+                feedback = parse_string_to_dict(feedback)
+                feedback['sec'] = sec
+                
+                if not any(key in valid_keys for key in feedback.keys()):
+                    st.error(f"Invalid key. Please use a key from the list: {valid_keys}", icon="🚨")
+                    break
+                idx = int(idx_str)
+                modified_annotation = feedback
+                
+            else:
+                idx = int(idx_str)
+                modified_annotation = annot[idx]
             
-            modified_annotation = annot[idx]
-            
-            if feedback != 'all_correct':
+            if feedback != 'all_correct' and not idx_str.startswith('add_'):
                 # Single-key items (e.g., 'cat', 'norm_ent')
                 single_keys = set(value.split(':')[0].strip(" '") for value in feedback.values() if len(value.split(':')) == 2)
 
@@ -183,8 +211,8 @@ def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['i
                             new_dict1, new_dict2 = extract_key_values(modified_annotation)
                             dic1_key = find_and_map_values_by_index(key_value_pair[0], new_dict1, new_dict2)
                             
-                            print("dic1_key", dic1_key)
-                            input("STOIP!")
+                            # print("dic1_key", dic1_key.split('.'))
+                            # input("STOIP!")
                             
                             ### 4 key_value_pair ["attr'", "{'appr'", "'mor|nodular', 'tmp'", "'improved|improved'}"]
                             if len(key_value_pair) == 1:
@@ -196,10 +224,6 @@ def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['i
                                 k, v = key_value_pair
                                 k = remove_quotes_with_re(k)
                                 v = remove_quotes_with_re(v)
-
-                                # print("k", k)
-                                # print("v", v)
-                                # input("STOP!")
 
                                 if prefix == 'include':
                                     if k in modified_annotation:
@@ -215,9 +239,10 @@ def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['i
                                                                         
                                     if k in modified_annotation:
                                         modified_annotation[k] = v
+                                        
                                 elif prefix == 'delete':
-                                    print("modified_annotation", modified_annotation)
-                                    input("STOP!")
+                                    # print("modified_annotation", modified_annotation)
+                                    # input("STOP!")
                                     if k in modified_annotation and modified_annotation[k] == v:
                                         del modified_annotation[k]
                                         
@@ -239,7 +264,7 @@ def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['i
     new_json['annotations'] = annotations_list#json.dumps(annotations_list, indent=4)
     new_json['feedback'] = new_annotate_list#json.dumps(annotations_list, indent=4)
     
-    print("new_annotate_list", new_annotate_list)
+    # print("new_annotate_list", new_annotate_list)
     # Create directories if they don't exist
     reviewer_name = st.session_state.reviewer_name
     
@@ -289,7 +314,7 @@ def del_files(service, folder_id, indent=0):
 
 # Start from root
 # del_files(drive_service, 'root')
-
+# exit()
 
 # when local
 # def load_feedback(patient_id, display_names):
@@ -350,7 +375,6 @@ def find_top_folder(service):
     else:
         return None
 
-
 def load_json(filepath):
     with open(filepath, 'r') as f:
         data = json.load(f)
@@ -369,6 +393,36 @@ def tokenize_annotations(annotations):
     for sent in annotations:
         tokenized_annotations.extend(sent_tokenize(sent))
     return tokenized_annotations
+
+def count_json_files_in_subfolders(service, top_folder_id):
+    subfolder_results = service.files().list(
+        q=f"'{top_folder_id}' in parents and mimeType='application/vnd.google-apps.folder'",
+        pageSize=1000,
+        fields="files(id, name)"
+    ).execute()
+    
+    subfolders = subfolder_results.get('files', [])
+    
+    count_dict = {}  # 각 서브디렉터리에 있는 JSON 파일의 개수를 저장할 딕셔너리
+    
+    print("subfolders", subfolders)
+    
+    # 각 서브디렉터리에서 JSON 파일 찾기
+    for folder in subfolders:
+        folder_id = folder['id']
+        folder_name = folder['name']
+        
+        json_file_results = service.files().list(
+            q=f"'{folder_id}' in parents and mimeType='application/json'",
+            pageSize=1000,
+            fields="files(id, name)"
+        ).execute()
+        
+        json_files = json_file_results.get('files', [])
+        
+        count_dict[folder_name] = len(json_files)
+    
+    return count_dict
 
 
 def get_statistics(data, dfs):
@@ -392,11 +446,13 @@ def get_statistics(data, dfs):
             
             sents_from_annos = list(set(df['sent']))
             sents_from_annos_tokenized = tokenize_annotations(sents_from_annos)
-            
             missing_sents_for_section = [sent for sent in section_sents if sent not in sents_from_annos_tokenized]
             if missing_sents_for_section:
-                missing_sents[sec] = missing_sents_for_section    
-    
+                missing_sents[sec] = missing_sents_for_section               
+        else:                
+            if len(section_sents) != 0 and section_sents[0] != '':
+                missing_sents[sec] = section_sents
+                
         if 'cat' in df.columns:
             cat_counts = df['cat'].value_counts().to_dict()
             cat_stats[sec] = cat_counts
@@ -461,13 +517,17 @@ if 'reviewer_name' not in st.session_state:
     st.session_state.reviewer_name = ''
 
 # If reviewer_name is empty, prompt the user to enter their name
+instruction_placeholder = st.empty()
+
 if not st.session_state.reviewer_name:
-    st.session_state.reviewer_name = st.text_input("Please enter your name for feedback:")
+    st.session_state.reviewer_name = st.text_input("Please enter your name to start feedback!! :muscle:")
+    instruction_placeholder.write("Instructions: sdfasdfadksfk")
 
 # If reviewer_name is set, display the rest of the app
-if st.session_state.reviewer_name:
+if st.session_state.reviewer_name:    
     st.title(f'GPT4 Results - Reviewer: {st.session_state.reviewer_name}')
-
+    # st.write(f"**Folder path:** {count_json_files_in_subfolders(drive_service, find_top_folder(drive_service))}")  # 과거 얼마나 했고 몇퍼센트 남았는지 진행상태를 알려줌
+    
     # Categorize files by patient ID
     file_structure = defaultdict(list)
     for file in json_files:
@@ -505,6 +565,10 @@ if st.session_state.reviewer_name:
     if 'checkbox_states' not in st.session_state:
         st.session_state.checkbox_states = {}
 
+    if 'row_count_state' not in st.session_state:
+        st.session_state.row_count_state = {}
+        st.session_state.row_feedback_data = {}
+
     # Check if selected_file has changed
     if st.session_state.last_selected_file != selected_file:
         # Reset the previous_feedback and additional_feedback_count
@@ -512,6 +576,8 @@ if st.session_state.reviewer_name:
         previous_feedback = load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
         st.session_state.additional_feedback_count = {}
         st.session_state.checkbox_states = {}
+        st.session_state.row_count_state = {}
+        
     else:
         # 이전에 저장한 피드백이 있다면 불러옴
         previous_feedback = {}#load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
@@ -528,7 +594,10 @@ if st.session_state.reviewer_name:
     present_sections, sent_stats, cat_stats, norm_ent_stats, missing_sents = get_statistics(data, dfs)
 
     # 파일 통계 섹션 시작
-    with st.expander(f"**Show File Statistics: {len(missing_sents)} Missing Sents**"):
+    # 전체 개수를 계산 (선택 사항)
+    total_missing = sum(len(value) for value in missing_sents.values())
+
+    with st.expander(f"**Show File Statistics: {total_missing} Missing Sents**"):
         #1. 'CAT'의 value 통계 출력
         st.write("CAT stats:")
         section_to_cat_and_norm_ent = defaultdict(list)
@@ -546,9 +615,10 @@ if st.session_state.reviewer_name:
                 st.write(f"  - {section} ({cat}): {dict(norm_ent_dict)}")
     
         # Display missing sentences
-        st.write(f"{len(missing_sents)} Missing Sents")
+        count_per_key = {key: len(value) for key, value in missing_sents.items()}
+        st.write(f"{total_missing} Missing Sents")
         for sec, sents in missing_sents.items():
-            st.write(f"  - {sec}: {', '.join(sents)}")
+            st.write(f"  - {sec} ({count_per_key[sec]}): {', '.join(sents)}")
     
     feedback_data = {}
     correct_rows = {}
@@ -556,21 +626,78 @@ if st.session_state.reviewer_name:
     feedback_columns = ['include', 'delete', 'modify', 'opinion']
     desired_order = ['ent', 'cat', 'exist', 'rel', 'attr', 'sent']
 
+    example_text = """For example: {ent: endotracheal tube|tube,
+            cat: DEV,
+            exist: DP|is,
+            loc: upper margin of the clavicles,
+            carina,
+            appr: size|45 mm
+            }
+            """
     for sec, content in sections.items():
-        st.write(f"**{sec}:** {content}")
-        
+        feedback_data[sec] = {}
+        correct_rows[sec] = {}
+        st.write("")
+        # st.write(f"**{sec}:** {content}")
+        st.markdown(f" <span style='font-size: 2em;'> :clipboard: {sec}: </span> <span style='font-size: 1.2em;'> {content}</span>", unsafe_allow_html=True)
+
         current_df = dfs[sec]
         columns_to_drop = ["sec", "sent_idx"]
         columns_to_drop = [col for col in columns_to_drop if col in current_df.columns]
-        if columns_to_drop:
-            filtered_df = current_df.drop(columns=columns_to_drop)
+                
+        # if columns_to_drop:
+        filtered_df = current_df.drop(columns=columns_to_drop)
+                
+        if len(filtered_df) == 0:            
+            st.write(f"No annotations.")
+            # sec에 해당하는 키를 동적으로 초기화
+            st.session_state.row_count_state.setdefault(sec, 0)
 
+            # 'Add Row'와 'Remove Row' 버튼을 위한 컬럼
+            col_add_remove_submit = st.columns([1, 1, 2])  # 가중치를 사용하여 'Submit Feedback' 버튼을 가장 오른쪽에 크게 만듭니다.
+
+            # "Add Row" 버튼
+            if col_add_remove_submit[0].button(f"Add for {sec} section", key=f"{sec}_add_row"):
+                st.session_state.row_count_state[sec] += 1
+                
+            # "Remove Row" 버튼
+            if col_add_remove_submit[1].button(f"Remove", key=f"{sec}_remove_row"):
+                if st.session_state.row_count_state[sec] > 0:  # 행 수가 1 이상일 경우만 제거
+                    st.session_state.row_count_state[sec] -= 1
+           
+            # 텍스트 박스를 동적으로 생성
+            for i in range(st.session_state.row_count_state[sec]):
+                feedback_data[sec][str(i)] = st.text_area(f"Additional feedback.", 
+                                                           value=example_text,  # 기본 텍스트를 설정
+                                                          key=f"{sec}_feedback_for_row_{i+1}")
+
+            # print("11 feedback_data", feedback_data)
+            # input("STOP!")  
+
+            if previous_feedback:
+                annotations_list = previous_feedback.get('feedback', [])
+                # print("annotations_list", annotations_list)
+                # input("SOTP!!")                
+                
+                prev_sec_list = [item for item in annotations_list if item['sec'] == sec]
+                reordered_annotations = []
+                
+                print("prev_sec_list", prev_sec_list)
+                
+                if len(prev_sec_list) != 0:    
+                    for prev_annot in prev_sec_list:
+                        reordered_dict = {k: prev_annot[k] for k in desired_order if k in prev_annot}
+                        reordered_annotations.append(reordered_dict)
+                    
+                    st.write(":sunglasses: Previous Results:")
+                    for a in reordered_annotations:
+                        st.write(f"  - {a}")
+
+            
+        else:
             with st.expander(f"**{sec} DataFrame**"):
-                st.write(filtered_df)
-
-            feedback_data[sec] = {}
-            correct_rows[sec] = {}
-                        
+                st.write(filtered_df)                       
+            
             # additional_feedback_count[sec] = {}  # Commented this out
             sec_list = [item for item in annotations if item['sec'] == sec]
             
@@ -585,14 +712,14 @@ if st.session_state.reviewer_name:
                         reordered_annotations.append(reordered_dict)
                     
                     for a in reordered_annotations:
-                        st.write("Previous Results:")
+                        st.write(":sunglasses: Previous Results:")
                         st.write(f"  - {a}")
                 else:
                     error_message = f"No feedback found for this section."
                     st.error(error_message, icon="🚨")
 
 
-            with st.expander(f"**Review {sec}**"):                
+            with st.expander(f"**Review {sec}**"):
                 for index, row in current_df.iterrows():
                     # print("current_dfcurrent_df", current_df)
                     # print(f"{index}index and {current_df[index]}")
@@ -621,7 +748,7 @@ if st.session_state.reviewer_name:
 
                     col_list = st.columns(len(feedback_columns) + 1)
                     correct_key = f"{sec}_correct_{index}"
-                    overall_correct = col_list[0].checkbox(f"Correct all", 
+                    overall_correct = col_list[0].checkbox(f":thumbsup:", 
                                                             value=st.session_state.checkbox_states.get(correct_key, False),  # 상태 가져오기
                                                             key=correct_key)
                     st.session_state.checkbox_states[correct_key] = overall_correct
@@ -631,19 +758,16 @@ if st.session_state.reviewer_name:
                         feedback_data[sec][index] = 'all_correct'
                     else:
                         for col_num, col_name in enumerate(feedback_columns):
-                            nested_col_list = col_list[col_num + 1].columns(2)
-                            correct_key = f"{sec}_correct_{index}_{col_name}"
-                            correct = nested_col_list[0].checkbox(f"{col_name}", key=correct_key)
+                            nested_col_list = col_list[col_num + 1].columns(3)
+                            correct = nested_col_list[0].text(f"{col_name}")
+                            button_col1, button_col2 = nested_col_list[1], nested_col_list[2]
 
-                            if correct:
-                                correct_rows[sec][index][col_name] = True
-                            else:
-                                if nested_col_list[1].button(f"Add", key=f"{sec}_add_more_{index}_{col_name}"):
-                                    st.session_state.additional_feedback_count[sec][index][col_name] += 1
+                            if button_col1.button(f":heavy_plus_sign:", key=f"{sec}_add_more_{index}_{col_name}"):
+                                st.session_state.additional_feedback_count[sec][index][col_name] += 1
 
-                                if nested_col_list[1].button(f"Remove", key=f"{sec}_remove_{index}_{col_name}"):
-                                    if st.session_state.additional_feedback_count[sec][index][col_name] > 1:
-                                        st.session_state.additional_feedback_count[sec][index][col_name] -= 1
+                            if button_col2.button(f":heavy_minus_sign:", key=f"{sec}_remove_{index}_{col_name}"):
+                                if st.session_state.additional_feedback_count[sec][index][col_name] > 1:
+                                    st.session_state.additional_feedback_count[sec][index][col_name] -= 1
 
                             # Dynamically generate additional feedback text boxes
                             for i in range(2, st.session_state.additional_feedback_count[sec][index][col_name] + 1):
@@ -651,36 +775,71 @@ if st.session_state.reviewer_name:
                                 additional_feedback = col_list[col_num + 1].text_input(f"{col_name} {i-1}", key=additional_feedback_key)
                                 feedback_data[sec][index][f"{col_name}_{i-1}"] = additional_feedback
 
-                # Added a unique key for the Submit Feedback button
+                # # 'Submit Feedback' 버튼
                 if st.button('Submit Feedback', key=f"unique_key_for_submit_button_{sec}"):
                     save_feedback(selected_patient, selected_display_name, feedback_data, feedback_columns)
                     # st.experimental_rerun()
                     now_feedback = load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
 
-                    st.write("Updated Results:")
+                    st.write(":point_right: Updated Results:")
                     
-                    # print("now_feedback", now_feedback)
-
                     # If now_feedback is already a Python dict, no need for json.loads
-                    feedback_list = now_feedback.get('feedback', [])
-                    print("feedback_list", feedback_list)
-                    
-                    print("sec", sec)
-                    
+                    feedback_list = now_feedback.get('feedback', [])                   
                     reordered_annotations = []
 
                     sec_list = [a for a in feedback_list if a['sec'] == sec]
-                    
-                    print("sec_list", sec_list)
-                    
                     
                     for annotation in sec_list:
                         reordered_dict = {k: annotation[k] for k in desired_order if k in annotation}
                         reordered_annotations.append(reordered_dict)
                     
                     for annotation in reordered_annotations:
-                        st.write(f"  - {annotation}")
-                    
-
+                        st.write(f"  - {annotation}")                    
                 else:
                     st.write("No feedback found for this section.")
+
+            # sec에 해당하는 키를 동적으로 초기화
+            st.session_state.row_count_state.setdefault(sec, 0)
+
+            # 'Add Row'와 'Remove Row' 버튼을 위한 컬럼
+            col_add_remove_submit = st.columns([1, 1, 2])  # 가중치를 사용하여 'Submit Feedback' 버튼을 가장 오른쪽에 크게 만듭니다.
+
+            # "Add Row" 버튼
+            if col_add_remove_submit[0].button(f"Add for {sec} section", key=f"{sec}_add_row"):
+                st.session_state.row_count_state[sec] += 1
+
+            # "Remove Row" 버튼
+            if col_add_remove_submit[1].button(f"Remove", key=f"{sec}_remove_row"):
+                if st.session_state.row_count_state[sec] > 0:  # 행 수가 1 이상일 경우만 제거
+                    st.session_state.row_count_state[sec] -= 1
+
+            # 텍스트 박스를 동적으로 생성
+            for i in range(st.session_state.row_count_state[sec]):
+                st.text_area(f"Additional feedback.", 
+                 value=example_text,  # 기본 텍스트를 설정
+                 key=f"{sec}_feedback_for_row_{i+1}")
+
+        
+        # {ent: endotracheal tube|tube, cat: DEV, exist: DP|is, loc: upper margin of the clavicles, carina, appr: size|45 mm}
+        
+        
+        # # 'Submit Feedback for whole' 버튼
+        if col_add_remove_submit[2].button('Submit', key=f"additional_submit_button_{sec}"):
+            save_feedback(selected_patient, selected_display_name, feedback_data, feedback_columns)
+            # st.experimental_rerun()
+            now_feedback = load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
+
+            st.write(":pushpin: Newely added Results:")
+            
+            # If now_feedback is already a Python dict, no need for json.loads
+            feedback_list = now_feedback.get('feedback', [])
+            reordered_annotations = []
+
+            sec_list = [a for a in feedback_list if a['sec'] == sec]           
+            
+            for annotation in sec_list:
+                st.write(f":heavy_plus_sign: {annotation}")
+            
+
+        else:
+            st.write("No feedback found for this section.")
