@@ -193,7 +193,7 @@ def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['i
                 idx = int(idx_str)
                 modified_annotation = annot[idx]
             
-            if feedback != 'all_correct' and not idx_str.startswith('add_'):
+            if feedback != 'all_correct' and not isinstance(idx_str, str):
                 # Single-key items (e.g., 'cat', 'norm_ent')
                 single_keys = set(value.split(':')[0].strip(" '") for value in feedback.values() if len(value.split(':')) == 2)
 
