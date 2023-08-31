@@ -524,80 +524,82 @@ if not st.session_state.reviewer_name:
 
     st.session_state.reviewer_name = st.text_input("Please enter your name to start feedback!! :muscle:")
     with col1:
-        st.write("""
-        ## 소개
-        이 앱은 GPT-4를 통한 entity-relation-attribute 추출 결과에 대한 피드백을 위한 도구입니다. 
-        리뷰어가 피드백을 제공할 총 데이터는 평균 10.07개의 study sequence를 갖는 293명의 환자로부터 얻어진 3,269개의 리포트입니다. 최종 완료된 리뷰는 테스트 세트로 사용될 예정입니다.
-        
-        ## 시작하기 전에
-        1. **입력은 영어로 작성 해주세요.**
-        2. **리뷰어 이름 입력**: 앱 접속 후 리뷰어의 이름을 입력하세요.
-        3. **데이터 탐색**: 왼쪽 사이드바에서 환자 ID와 study 파일(JSON 형식)을 선택할 수 있습니다.
-        4. **리포트 및 GPT-4 결과 확인**: 선택한 study 파일을 클릭하면 원본 리포트의 'History', 'Findings', 'Impression' 섹션과 그에 대한 GPT-4 결과를 확인할 수 있습니다.
+        with st.expander("한국어 안내", expanded=False):
+            st.write("""
+            ## 소개
+            이 앱은 GPT-4를 통한 entity-relation-attribute 추출 결과에 대한 피드백을 위한 도구입니다. 
+            리뷰어가 피드백을 제공할 총 데이터는 평균 10.07개의 study sequence를 갖는 293명의 환자로부터 얻어진 3,269개의 리포트입니다. 최종 완료된 리뷰는 테스트 세트로 사용될 예정입니다.
+            
+            ## 시작하기 전에
+            1. **입력은 영어로 작성 해주세요.**
+            2. **리뷰어 이름 입력**: 앱 접속 후 리뷰어의 이름을 입력하세요.
+            3. **데이터 탐색**: 왼쪽 사이드바에서 환자 ID와 study 파일(JSON 형식)을 선택할 수 있습니다.
+            4. **리포트 및 GPT-4 결과 확인**: 선택한 study 파일을 클릭하면 원본 리포트의 'History', 'Findings', 'Impression' 섹션과 그에 대한 GPT-4 결과를 확인할 수 있습니다.
 
-        ## 피드백 방법
+            ## 피드백 방법
 
-        ### 기본 피드백
-        - **GPT-4 결과**: Dataframe 형태와 추출에 사용된 문장, 그리고 해당 결과가 간략히 표시됩니다.
-        - **저장**: 섹션별 리뷰를 수행한 후, 제출 버튼을 눌러야 해당 섹션의 리뷰 내용이 저장됩니다.
-        - **피드백 형식**: 피드백을 남길 시 반드시 dictionary 형태로 'key-value' 쌍의 형식을 따라주세요.  
-        *ex) exist: DP|worsening*
-        - **피드백 시작**: 'Review {section}'을 클릭하여 피드백을 시작하세요.
+            ### 기본 피드백
+            - **GPT-4 결과**: Dataframe 형태와 추출에 사용된 문장, 그리고 해당 결과가 간략히 표시됩니다.
+            - **저장**: 섹션별 리뷰를 수행한 후, 제출 버튼을 눌러야 해당 섹션의 리뷰 내용이 저장됩니다.
+            - **피드백 형식**: 피드백을 남길 시 반드시 dictionary 형태로 'key-value' 쌍의 형식을 따라주세요.  
+            *ex) exist: DP|worsening*
+            - **피드백 시작**: 'Review {section}'을 클릭하여 피드백을 시작하세요.
 
-        #### 피드백 종류:
-        1. **Correct**: GPT-4의 결과가 정확하다면 ':thumbsup:'를 클릭하세요.
-        2. **Include**: 추가해야 할 entity의 key와 value를 입력하세요.
-        3. **Delete**: 삭제해야 할 entity의 key와 value를 입력하세요.
-        4. **Modify**: 수정이 필요한 entity의 key는 유지하고 value만 변경하여 입력하세요.
+            #### 피드백 종류:
+            1. **Correct**: GPT-4의 결과가 정확하다면 ':thumbsup:'를 클릭하세요.
+            2. **Include**: 추가해야 할 entity의 key와 value를 입력하세요.
+            3. **Delete**: 삭제해야 할 entity의 key와 value를 입력하세요.
+            4. **Modify**: 수정이 필요한 entity의 key는 유지하고 value만 변경하여 입력하세요.
 
-        ### 추가적인 피드백
-        - **Additional Annotation**: GPT-4가 누락한 문장이 있거나 새로운 annotation을 추가하고 싶다면, 각 섹션에 있는 'Add for section'을 클릭하여 추가나 삭제를 할 수 있습니다.
+            ### 추가적인 피드백
+            - **Additional Annotation**: GPT-4가 누락한 문장이 있거나 새로운 annotation을 추가하고 싶다면, 각 섹션에 있는 'Add for section'을 클릭하여 추가나 삭제를 할 수 있습니다.
 
-        ## 제출
-        - **저장과 제출**: 각 섹션에서 피드백을 모두 완료한 뒤, '제출' 버튼을 클릭하여 피드백을 저장하세요. 이전에 제출한 피드백은 앱을 재접속하더라도 볼 수 있습니다.
+            ## 제출
+            - **저장과 제출**: 각 섹션에서 피드백을 모두 완료한 뒤, '제출' 버튼을 클릭하여 피드백을 저장하세요. 이전에 제출한 피드백은 앱을 재접속하더라도 볼 수 있습니다.
 
-        ### 중복 피드백
-        - 중복으로 피드백을 입력하게 되면, 가장 최근의 피드백만 저장됩니다.
-        """)
+            ### 중복 피드백
+            - 중복으로 피드백을 입력하게 되면, 가장 최근의 피드백만 저장됩니다.
+            """)
         
     with col2:
-        st.write("""
+        with st.expander("English Guide", expanded=False):
+            st.write("""
 
-        ## Introduction
-        This app serves as a tool for providing feedback on the entity-relation-attribute extraction results via GPT-4. 
-        Reviewers will work with a total of 3,269 reports from 293 patients, each with an average of 10.07 study sequences. The finalized reviews are intended for use in test set.
+            ## Introduction
+            This app serves as a tool for providing feedback on the entity-relation-attribute extraction results via GPT-4. 
+            Reviewers will work with a total of 3,269 reports from 293 patients, each with an average of 10.07 study sequences. The finalized reviews are intended for use in test set.
 
-        ## Before You Start
-        1. **Please use English for feedback.**
-        2. **Reviewer's Name Entry**: Upon accessing the app, please enter your name.
-        3. **Data Exploration**: The left sidebar allows you to select the patient ID and study files (in JSON format).
-        4. **Report and GPT-4 Results**: Clicking on the chosen study file will display the original report's 'History', 'Findings', and 'Impression' sections, along with the corresponding GPT-4 results.
+            ## Before You Start
+            1. **Please use English for feedback.**
+            2. **Reviewer's Name Entry**: Upon accessing the app, please enter your name.
+            3. **Data Exploration**: The left sidebar allows you to select the patient ID and study files (in JSON format).
+            4. **Report and GPT-4 Results**: Clicking on the chosen study file will display the original report's 'History', 'Findings', and 'Impression' sections, along with the corresponding GPT-4 results.
 
-        ## Feedback Method
+            ## Feedback Method
 
-        ### Basic Feedback
-        - **GPT-4 Results**: Results are briefly displayed in a dataframe, along with the sentences used for extraction.
-        - **Save**: After reviewing each section, click the 'Submit' button to save the review for that section.
-        - **Feedback Format**: Please strictly follow a 'key-value' pair format in a dictionary when leaving feedback.  
-        *e.g., exist: DP|worsening*
-        - **Start Feedback**: Click 'Review {section}' to begin the feedback process.
+            ### Basic Feedback
+            - **GPT-4 Results**: Results are briefly displayed in a dataframe, along with the sentences used for extraction.
+            - **Save**: After reviewing each section, click the 'Submit' button to save the review for that section.
+            - **Feedback Format**: Please strictly follow a 'key-value' pair format in a dictionary when leaving feedback.  
+            *e.g., exist: DP|worsening*
+            - **Start Feedback**: Click 'Review {section}' to begin the feedback process.
 
-        #### Types of Feedback:
-        1. **Correct**: Click ':thumbsup:' if GPT-4's result is accurate.
-        2. **Include**: Enter the key and value of the entity that should be added.
-        3. **Delete**: Enter the key and value of the entity that should be removed.
-        4. **Modify**: If an entity needs to be modified, keep the key the same and change only the value.
+            #### Types of Feedback:
+            1. **Correct**: Click ':thumbsup:' if GPT-4's result is accurate.
+            2. **Include**: Enter the key and value of the entity that should be added.
+            3. **Delete**: Enter the key and value of the entity that should be removed.
+            4. **Modify**: If an entity needs to be modified, keep the key the same and change only the value.
 
-        ### Additional Feedback
-        - **Additional Annotation**: If GPT-4 has missed any sentences or you wish to add new annotations, click 'Add for section' in each section to make additions or deletions.
+            ### Additional Feedback
+            - **Additional Annotation**: If GPT-4 has missed any sentences or you wish to add new annotations, click 'Add for section' in each section to make additions or deletions.
 
-        ## Submission
-        - **Save and Submit**: After completing the feedback for all sections, click the 'Submit' button to save your feedback. You can view previously submitted feedback even after re-accessing the app.
+            ## Submission
+            - **Save and Submit**: After completing the feedback for all sections, click the 'Submit' button to save your feedback. You can view previously submitted feedback even after re-accessing the app.
 
-        ### Duplicate Feedback
-        - If duplicate feedback is entered, only the most recent feedback will be saved.
+            ### Duplicate Feedback
+            - If duplicate feedback is entered, only the most recent feedback will be saved.
 
-        """)
+            """)
 
 # If reviewer_name is set, display the rest of the app
 if st.session_state.reviewer_name:    
