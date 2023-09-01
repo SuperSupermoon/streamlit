@@ -140,26 +140,38 @@ def find_and_map_values_by_index(key_to_find, output_dict1, output_dict2):
     return corresponding_key_in_output_dict1  # 해당하는 값이 없으면 None을 반환
 
 
-# def parse_string_to_dict(input_str):
-#     parsed_dict = {}
-    
-#     for match in re.finditer(r"(\w+):\s*([^,]*)", input_str):
-#         key, value = match.groups()       
-#         parsed_dict[key] = value.strip()  # 공백 제거
-    
-#     return parsed_dict
-
-
-def parse_string_to_dict(input_str):
+def parse_input_to_dict(input_data):
     parsed_dict = {}
-    # 불필요한 문자 제거
-    clean_str = re.sub(r"[}\]\n]", "", input_str)
     
-    for match in re.finditer(r"(\w+):\s*([^,]*)(?:,|$)", clean_str, re.DOTALL):
-        key, value = match.groups()
-        parsed_dict[key.strip()] = value.strip()  # 공백 제거
-    
+    if isinstance(input_data, str):
+        # Remove unnecessary characters
+        clean_str = re.sub(r"[}\]\n]", "", input_data)
+        for match in re.finditer(r"(\w+):\s*([^,]*)(?:,|$)", clean_str, re.DOTALL):
+            key, value = match.groups()
+            parsed_dict[key.strip()] = value.strip()  # Remove whitespace
+            
+    elif isinstance(input_data, list):
+        # Remove leading and trailing whitespace from each string in the list
+        clean_list = [item.strip() for item in input_data]
+        
+        # Checking if there are exactly 2 items in the list
+        if len(clean_list) == 2:
+            key, value = clean_list
+            parsed_dict[key] = value
+
     return parsed_dict
+
+
+
+def adjust_key(k, reference_dict):
+    # Attempt to find a matching key in reference_dict that starts with 'rel.'
+    matching_key = next((key for key in reference_dict.keys() if key.endswith('.' + k)), None)
+    
+    if matching_key:
+        # If a matching key is found, modify k to match the format of the key in reference_dict            
+        return matching_key.replace('.', ': ').split(': ')
+    return [k]
+
 
 
 def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['include', 'delete', 'modify', 'opinion'], valid_keys = ['ent', 'sec', 'exist', 'cat', 'sent', 'sent_idx', 'rel', 'loc', 'asso', 'attr', 'appr', 'level', 'tmp', 'opinion', 'norm_ent', 'ori_ent']):
@@ -180,7 +192,7 @@ def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['i
             
         for idx_str, feedback in sec_data.items():           
             if isinstance(idx_str, str):
-                feedback = parse_string_to_dict(feedback)
+                feedback = parse_input_to_dict(feedback)
                 feedback['sec'] = sec
                 
                 if not any(key in valid_keys for key in feedback.keys()):
@@ -207,12 +219,9 @@ def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['i
                         if prefix == 'opinion':
                             modified_annotation['opinion'] = value
                         else:
-                            key_value_pair = value.split(": ")
+                            key_value_pair = [item.strip() for item in value.split(": ")]                            
                             new_dict1, new_dict2 = extract_key_values(modified_annotation)
                             dic1_key = find_and_map_values_by_index(key_value_pair[0], new_dict1, new_dict2)
-                            
-                            # print("dic1_key", dic1_key.split('.'))
-                            # input("STOIP!")
                             
                             ### 4 key_value_pair ["attr'", "{'appr'", "'mor|nodular', 'tmp'", "'improved|improved'}"]
                             if len(key_value_pair) == 1:
@@ -224,40 +233,43 @@ def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['i
                                 k, v = key_value_pair
                                 k = remove_quotes_with_re(k)
                                 v = remove_quotes_with_re(v)
-
+                                                                
+                                k_list = adjust_key(k, new_dict1)
+                                
                                 if prefix == 'include':
-                                    if k in modified_annotation:
-                                        if isinstance(modified_annotation[k], list):
-                                            modified_annotation[k].append(v)
+                                    if len(k_list) == 2:
+                                        if k_list[0] in modified_annotation:
+                                            if isinstance(modified_annotation[k_list[0]], dict):                                             
+                                                modified_annotation[k_list[0]][k_list[1]] = [modified_annotation[k_list[0]][k_list[1]], v]
+                                            else:
+                                                modified_annotation[k_list[0]][k_list[1]] = [modified_annotation[k_list[0]][k_list[1]], v]
                                         else:
-                                            modified_annotation[k] = [modified_annotation[k], v]
+                                            modified_annotation[k_list[0]] = {k_list[1]: v}
                                     else:
-                                        modified_annotation[k] = v
+                                        if k_list[0] in modified_annotation:
+                                            if isinstance(modified_annotation[k_list[0]], list):
+                                                modified_annotation[k_list[0]].append(v)
+                                            else:
+                                                modified_annotation[k_list[0]] = [modified_annotation[k_list[0]], v]
+                                        else:
+                                            modified_annotation[k_list[0]] = v
+
                                         
                                 elif prefix == 'modify':
-                                    # new_dict2[key_value_pair[0]] = key_value_pair[1]
-                                                                        
-                                    if k in modified_annotation:
-                                        modified_annotation[k] = v
-                                        
-                                elif prefix == 'delete':
-                                    # print("modified_annotation", modified_annotation)
-                                    # input("STOP!")
-                                    if k in modified_annotation and modified_annotation[k] == v:
-                                        del modified_annotation[k]
-                                        
-                            if len(key_value_pair) == 3:
-                                k1, k2, v = key_value_pair
-                                # print("modified_annotation", modified_annotation)
-                                # print("k1", k1)
-                                if k1 in modified_annotation:
-                                    if isinstance(modified_annotation[k1], dict):
-                                        modified_annotation[k1][k2] = v
+                                    if len(k_list) == 2:
+                                        if k_list[0] in modified_annotation:
+                                            modified_annotation[k_list[0]] = {k_list[1]: v}
                                     else:
-                                        modified_annotation[k1] = {k2: v}
-                                else:
-                                    modified_annotation[k1] = {k2: v}
-                                    
+                                        if k_list[0] in modified_annotation:
+                                            modified_annotation[k_list[0]] = v
+                                            
+                                elif prefix == 'delete':
+                                    if len(k_list) == 2:
+                                        if k_list[0] in modified_annotation and modified_annotation[k_list[0]][k_list[1]] == v:
+                                            del modified_annotation[k_list[0]][k_list[1]]
+                                    else:
+                                        if k_list[0] in modified_annotation and modified_annotation[k_list[0]] == v:
+                                            del modified_annotation[k_list[0]]                                                                        
             new_annotate_list.append(modified_annotation)
 
     # print(f"annotations_list {len(annotations_list)} vs new_annotate_list {len(new_annotate_list)}")
