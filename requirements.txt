@@ -6,26 +6,6 @@ cachetools==5.3.1
 certifi==2023.7.22
 charset-normalizer==3.2.0
 click==8.1.7
-<<<<<<< HEAD
-cloudpickle==1.6.0
-colorama==0.4.3
-command-not-found==0.3
-configobj==5.0.6
-constantly==15.1.0
-contextlib2==21.6.0
-cryptography==2.8
-dbus-python==1.2.16
-decorator==4.4.2
-defusedxml==0.6.0
-distro==1.4.0
-distro-info===0.23ubuntu1
-docker==6.1.3
-ecdsa==0.17.0
-entrypoints==0.3
-exceptiongroup==1.1.1
-fastapi==0.78.0
-=======
->>>>>>> 4ba469150ca3b2f65dff2f6e6e2ca4916da12135
 gitdb==4.0.10
 GitPython==3.1.32
 google-api-core==2.11.1
