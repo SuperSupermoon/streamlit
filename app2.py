@@ -531,9 +531,23 @@ if 'reviewer_name' not in st.session_state:
 # If reviewer_name is empty, prompt the user to enter their name
 # instruction_placeholder = st.empty()
 
-if not st.session_state.reviewer_name:
-    col1, col2 = st.columns(2)
+if 'show_cof' not in st.session_state:
+    st.session_state['show_cof'] = False
+    
+if 'show_sym' not in st.session_state:
+    st.session_state['show_sym'] = False
+    
+if 'show_rel' not in st.session_state:
+    st.session_state['show_rel'] = False
+    
+if 'show_attr' not in st.session_state:
+    st.session_state['show_attr'] = False
+    
 
+
+if not st.session_state.reviewer_name:
+    col1, col2, col3 = st.columns(3)
+    
     st.session_state.reviewer_name = st.text_input("Please enter your name to start feedback!! :muscle:")
     with col1:
         with st.expander("한국어 안내", expanded=False):
@@ -612,6 +626,94 @@ if not st.session_state.reviewer_name:
             - If duplicate feedback is entered, only the most recent feedback will be saved.
 
             """)
+            
+    with col3:
+        with st.expander("Entity schema", expanded=False):
+            st.markdown("Click button to see entity schema.")
+            if st.button("6 Entity type", key='btn_cof'):
+                st.session_state.show_cof = not st.session_state.show_cof
+
+            if st.session_state.show_cof:
+                st.markdown("""
+            - COF (Clinical Objective Findings)
+            
+                Refers to evidence-based medical information obtained through lab tests, physical exam, and other diagnostic procedures that are not based on chest x-ray imaging.
+                
+                ex) 'hemoglobin levels', 'white blood cell count', 'liver function tests','heart rate', 'Systemic inflammatory response syndrom (SIRS)', 'temperature'
+            
+            - SYM (Symptom)
+            
+                A subjective indication of a disease or a change in condition as perceived by the patient. This is based on personal experiences and feelings, and they are not directly measurable.
+                
+                ex) 'fatigue', 'cough', 'shortness of breath', 'vomiting'
+            
+            - ROF-ANAT (Radiological objective findings-Anatomy)
+            
+                Refers to anatomical finding based solely on what is observable within the given image. It encompasses any discernible medical findings visible in the image itself, not inferences based on the patient's history or results from previous studies.
+                
+                ex) 'Lung', 'Cardiomediastinal silhouette'
+            
+            - ROF-PATH (Radiological objective findings-Pathology)
+            
+                Refers to pathological finding based solely on what is observable within the given image. It encompasses any discernible medical findings visible in the image itself, not inferences based on the patient's history or results from previous studies.
+                
+                ex) 'Opacity', 'Thickening', 'Consolidation', 'Inﬁltration', 'Atelectasis', 'Collapse', 'Pulmonary Edema', 'Congestion', 'Reticular Markings, ILD Pattern', 'Pleural Effusion', 'Bronchiectasis', 'Calciﬁcation', 'Pneumomediastinum', 'Pneumoperitoneum', 'Pneumothorax', 'Hydropneumothorax', 'Lesion', 'Mass', 'Nodule', 'Fracture', 'Hyperaeration', 'Cyst', 'Bullae', 'Hemidiaphragm', 'Eventration', 'Hernia', 'Scoliosis', 'Osteoarthritis', 'Fibrosis', 'Tortuous Aorta'
+            
+            - RSF (Radiological subjective findings)
+                
+                Refers to diagnosis derived from a physician's subjective judgment or reasoning, based not only on the given image but also on external information such as the patient's history, lab findings, or results from prior studies.
+                
+                ex) 'pneumonia', 'ﬂuid overload/heart failure', 'copd/emphysema', 'granulomatous disease', 'interstitial lung disease', 'goiter', 'lung cancer', 'aspiration', 'alveolar hemorrhage', 'pericardial effusion', 'pericarditis', 'pulmonary hypertension', 'tumor'
+            
+            - DEV (Medical devices)
+                
+                ex) chest tube, mediastinal drain, pigtail catheter, endotracheal tube, sternotomy, etc.""")
+
+            if st.button("4 Existence", key='btn_sym'):
+                st.session_state.show_sym = not st.session_state.show_sym
+
+            if st.session_state.show_sym:
+                st.markdown("""
+            
+            2. Existence (exist): Based on 'Definitive' or 'Tentative' diagnosis, and categorize it as 'Positively mentioned' (DP or TP); present or abnormal, 'Negatively mentioned' (DN or TN); absent or normal.
+            """)
+        
+            if st.button("2 Relation", key='btn_rel'):
+                    st.session_state.show_rel = not st.session_state.show_rel
+
+            if st.session_state.show_rel:
+                st.markdown("""
+            1. Location (loc): If the spatial concept of target entity exist, normalize the location using the given list: ['right lung', 'right apical zone', 'right lower lung zone', 'right hilar structures', 'left lung', 'left apical zone', 'left lower lung zone', 'left hilar structures', 'mediastinum', 'cardiac silhouette', 'right costophrenic angle', 'left costophrenic angle', 'upper mediastinum', 'spine', 'right clavicle', 'left clavicle', 'left mid lung zone', 'right hemidiaphragm', 'left hemidiaphragm', 'svc', 'abdomen', 'trachea', 'right upper lung zone', 'left upper lung zone', 'aortic arch', 'right mid lung zone', 'right atrium', 'cavoatrial junction', 'carina'].
+                But, if normalization difficult, extract the concept as is.
+                
+            2. Clinical association (asso): Refers to attributes that describe a relationship in which a particular medical finding or condition (A) is either caused by or closely linked with another finding or condition (B).
+                ex) 1. 'pnenumonia' associated with 'lung opacity', 'fatigue'. 2. 'pulmonary edema' associated with 'lung opacity', 'shortness of breath', 'leg swelling'. 3. 'lung opacity' associated with 'nipple shadow'.
+                """)
+                
+            if st.button("11 Attribution", key='btn_attr'):
+                    st.session_state.show_attr = not st.session_state.show_attr
+
+            if st.session_state.show_attr:
+                st.markdown("""
+            1. Appearance (appr), which can be categorized as
+                - Morphology (mor): Physical form, structure, shape, pattern or texture of an object or substance. (e.g., 'irregular', 'rounded', 'dense', 'ground-glass',  'patchy', 'linear', 'plate-like', 'nodular')
+                - Distribution (dist): Arrangement, spread of objects or elements within a particular area or space (e.g., 'focal', 'multifocal/multi-focal', 'scattered', 'hazy', 'widespread')
+                - Size (size): Physical dimensions or overall magnitude of an entity ('small', 'large', 'massive', 'subtle', 'minor', 'xx cm')
+
+            2. Level (level), which can be categorized as
+                - Numeric (num): Attributes are about counting or quantifying individual occurrences or components such as 'single', 'multiple', 'few', 'trace'.
+                - Sevierity (sev): Attributes referring to the severity of an entity such as 'mild', 'moderate', 'severe', 'low-grade', 'benign', 'malignant'.
+
+            3. Temporal (tmp) differential diagnosis, which can be categorized as
+                - Emergence (emerg): Refers to the chronological progression or appearance of a medical finding or device. Unlike terms that highlight the comparative change in condition, this concept emphasizes the chronological state, either within a single study or in relation to a sequential study. (e.g., new, old, acute, subacute, chronic, remote, recurrent).
+                - No Change (nchg): Refers to the consistent state or condition that remains unaltered from a prior study. (e.g., no changed, unchanged, similar, persistent)
+                - Improvement (improved): Refers to a positive change or stabilization in a patient's clinical state when compared to a prior assessment. (e.g., improved, decreased, stable)
+                - Worsened (worsened): Refers to the negative change in a patient's clinical state in comparison to a prior assessment. (e.g., worsened, increased)
+                - Replacement of DEV (replace): Refers to the altered position of a medical device inside a patient compared to prior studies. (e.g., displaced, repositioned).
+                - Resolve (resolve): Refers to the complete disappearance of a specific medical finding or device from imaging. (e.g., resolved, cleared).
+                """)
+                                        
+            
 
 # If reviewer_name is set, display the rest of the app
 if st.session_state.reviewer_name:    
@@ -781,9 +883,7 @@ if st.session_state.reviewer_name:
                     
                     st.write(":sunglasses: Previous Results:")
                     for a in reordered_annotations:
-                        st.write(f"  - {a}")
-
-            
+                        st.write(f"  - {a}")            
         else:
             with st.expander(f"**{sec} DataFrame**"):
                 st.write(filtered_df)                       
