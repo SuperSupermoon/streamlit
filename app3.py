@@ -190,15 +190,21 @@ def save_feedback(jsonfile, input_feedback, current_section, section_texts, disp
     existing_feedback = load_feedback(jsonfile['subject'], display_names, drive_service, top_folder_id)
 
     # 기존 데이터에 새로운 피드백 추가
-    if existing_feedback is not None and not (existing_feedback['section'] == current_section).any():
-        # st.write("existing_feedback")
-        # st.write(existing_feedback)
+    if existing_feedback is not None:
+        # 현재 섹션의 기존 피드백 찾기
+        existing_section_feedback = existing_feedback[existing_feedback['section'] == current_section]
+
+        # 기존 피드백이 있는 경우, 해당 피드백 삭제
+        if not existing_section_feedback.empty:
+            existing_feedback = existing_feedback[existing_feedback['section'] != current_section]
+
         input_feedback['subject_id'] = jsonfile['subject']
         input_feedback['study_id'] = jsonfile['study']
         input_feedback['sequence'] = jsonfile['sequence']
         input_feedback['section'] = current_section    
         input_feedback['report'] = section_texts
-        
+
+        # 새로운 피드백 추가
         feedback_data = pd.concat([existing_feedback, input_feedback], ignore_index=True)
     else:
         feedback_data = input_feedback.copy()
@@ -834,5 +840,6 @@ if st.session_state.reviewer_name:
                 st.write(":point_right: Updated Results:")
                 st.write(filtered_df)
             
+
             else:
                 st.write("No feedback found for this section.")
