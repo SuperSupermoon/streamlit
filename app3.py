@@ -80,7 +80,7 @@ def upload_to_drive(filename, filedata, folder_id=None):
     file = request.execute()
 
     # 파일의 ID와 부모 폴더 정보를 출력합니다.
-    print(f"Uploaded file with name {file.get('name')}, ID {file.get('id')} to parent(s) {file.get('parents')}")
+    # print(f"Uploaded file with name {file.get('name')}, ID {file.get('id')} to parent(s) {file.get('parents')}")
 
 
 def create_folder(folder_name, parent_folder_id=None):
@@ -105,6 +105,7 @@ def create_folder(folder_name, parent_folder_id=None):
         'name': folder_name,
         'mimeType': 'application/vnd.google-apps.folder'
     }
+    print("folder_name", folder_name)
     if parent_folder_id:
         folder_metadata['parents'] = [parent_folder_id]
         
@@ -173,7 +174,6 @@ def parse_input_to_dict(input_data):
     return parsed_dict
 
 
-
 def adjust_key(k, reference_dict):
     # Attempt to find a matching key in reference_dict that starts with 'rel.'
     matching_key = next((key for key in reference_dict.keys() if key.endswith('.' + k)), None)
@@ -184,38 +184,36 @@ def adjust_key(k, reference_dict):
     return [k]
 
 
+def save_feedback(jsonfile, input_feedback, current_section, section_texts, display_names, feedback_data=None):
+    # 기존 데이터 불러오기
+    top_folder_id = find_top_folder(drive_service)
+    existing_feedback = load_feedback(jsonfile['subject'], display_names, drive_service, top_folder_id)
 
-def save_feedback(jsonfile, feedback_data, current_section, section_texts, display_names):
-   
-    feedback_data['subject_id'] = jsonfile['subject']
-    feedback_data['study_id'] = jsonfile['study']
-    feedback_data['sequence'] = jsonfile['sequence']
-    feedback_data['section'] = current_section    
-    feedback_data['report'] = section_texts
-    
-    
-    # # Create directories if they don't exist
-    reviewer_name = st.session_state.reviewer_name
-    
-    # ######## When I use local server ######
-    # # os.makedirs(f"./feedback/{reviewer_name}/{patient_id}", exist_ok=True)
-    
-    # # # Save the new JSON
-    # # with open(f"./feedback/{reviewer_name}/{patient_id}/{display_names}.json", "w") as f:
-    # #     json.dump(new_json, f, indent=4)
-    
-    # ######## When I use external driver ######
-    
-    reviewer_folder_id = create_folder(reviewer_name)
-    patient_folder_id = create_folder(patient_id, reviewer_folder_id)
-    
-    print("save patient_folder_id", patient_folder_id)
+    # 기존 데이터에 새로운 피드백 추가
+    if existing_feedback is not None and not (existing_feedback['section'] == current_section).any():
+        # st.write("existing_feedback")
+        # st.write(existing_feedback)
+        input_feedback['subject_id'] = jsonfile['subject']
+        input_feedback['study_id'] = jsonfile['study']
+        input_feedback['sequence'] = jsonfile['sequence']
+        input_feedback['section'] = current_section    
+        input_feedback['report'] = section_texts
+        
+        feedback_data = pd.concat([existing_feedback, input_feedback], ignore_index=True)
+    else:
+        feedback_data = input_feedback.copy()
+        feedback_data['subject_id'] = jsonfile['subject']
+        feedback_data['study_id'] = jsonfile['study']
+        feedback_data['sequence'] = jsonfile['sequence']
+        feedback_data['section'] = current_section    
+        feedback_data['report'] = section_texts
+
+    # 폴더 생성 및 데이터 저장
+    reviewer_folder_id = create_folder(st.session_state.reviewer_name)
+    patient_folder_id = create_folder(jsonfile['subject'], reviewer_folder_id)
     upload_to_drive(f"{display_names}.csv", feedback_data, patient_folder_id)
 
-    # print("file uploaded to google drive!")
-    # # Remove the temporary file
-    # os.unlink(temp_name)
-
+    # return patient_folder_id, feedback_data
 
 def del_files(service, folder_id, indent=0):
     results = service.files().list(
@@ -225,6 +223,7 @@ def del_files(service, folder_id, indent=0):
     ).execute()
     
     items = results.get('files', [])
+    
     
     if not items:
         print('No files found.')
@@ -262,45 +261,35 @@ def get_full_path(service, file_id, file_name):
 
     return "/".join(path)
 
-full_path = get_full_path(drive_service, '1QgjF8ilaG4xoXKBCrf3KLi2g5TB53yun', '1_s59281953.csv')
-print("full_path", full_path)
+# full_path = get_full_path(drive_service, '1tHqNkaqdwT9EqZu5ndvP9e1x-DXW2BN9', '2_s55504914.csv')
+# print("full_path", full_path)
 
 # when Gdrive.
 def load_feedback(patient_id, display_names, service, folder_id):
     if folder_id is not None:
         results = service.files().list(
             q=f"'{folder_id}' in parents and name='{patient_id}' and mimeType='application/vnd.google-apps.folder'",
-            pageSize=100,  # Increase the page size to fetch more results
+            pageSize=10,
             fields="files(id, name, mimeType)"
         ).execute()
 
-        print(f"Results for folder {folder_id}: {results}")  # Debugging line
-
         items = results.get('files', [])
-        
-        print("items", items)
-        
         for item in items:
-            subfolder_id = item['id']
-            
-            subfolder_results = service.files().list(
-                q=f"'{subfolder_id}' in parents and name='{display_names}.csv'",
-                pageSize=100,  # Increase the page size to fetch more results
-                fields="files(id, name)"
-            ).execute()
+            if item['mimeType'] == 'application/vnd.google-apps.folder':
+                subfolder_id = item['id']
+                subfolder_results = service.files().list(
+                    q=f"'{subfolder_id}' in parents and name='{display_names}.csv'",
+                    pageSize=10,
+                    fields="files(id, name)"
+                ).execute()
+                
+                subfolder_items = subfolder_results.get('files', [])
+                if subfolder_items:
+                    csv_file_id = subfolder_items[0]['id']
+                    feedback_data = load_csv_from_drive(service, csv_file_id)
+                    return feedback_data
 
-            print(f"Results for subfolder {subfolder_id}: {subfolder_results}")  # Debugging line
-            
-            subfolder_items = subfolder_results.get('files', [])
-            
-            
-            if subfolder_items:
-                csv_file_id = subfolder_items[0]['id']
-                print(f"Loading CSV from file id {csv_file_id}")  # Debugging line
-                feedback_data = load_csv_from_drive(service, csv_file_id)
-                return feedback_data
-
-        return None  # or whatever you want to return when the file doesn't exist
+    return None
 
 
 def load_csv_from_drive(service, file_id):
@@ -323,6 +312,8 @@ def find_top_folder(service):
         fields="files(id, name)"
     ).execute()
     items = results.get('files', [])
+    
+    # print("root folder path:", items)
     
     if items:
         return items[0]['id']
@@ -371,10 +362,12 @@ def get_statistics(data, dfs):
             sents_from_annos = list(set(df['sent']))
             sents_from_annos_tokenized = tokenize_annotations(sents_from_annos)
             missing_sents_for_section = [sent for sent in section_sents if sent not in sents_from_annos_tokenized]
-            if missing_sents_for_section:
+            if len(missing_sents_for_section) != 0 and missing_sents_for_section[0] != '':
+                # print("missing_sents_for_section", missing_sents_for_section)
                 missing_sents[sec] = missing_sents_for_section               
         else:                
             if len(section_sents) != 0 and section_sents[0] != '':
+                # print("section_sents", section_sents)
                 missing_sents[sec] = section_sents
                 
         if 'cat' in df.columns:
@@ -441,8 +434,8 @@ def display_data(data):
 
     dfs = {}
     aggrid_grouped_options = {}
-    row1 = ['sent', 'entity', 'entity', 'status', 'status', 'relation', 'relation', 'attribute', 'attribute', 'attribute', 'attribute', 'attribute', 'temporal', 'temporal', 'temporal', 'temporal', 'temporal', 'temporal']
-    row2 = ['sent', 'ori_ent', 'norm_ent', 'exist', 'cat', 'loc', 'asso', 'appr.mor', 'appr.dist', 'appr.size', 'level.num', 'level.sev', 'emrg', 'nchg', 'improve', 'worse', 'replace (DEV)', 'resolve']
+    row1 = ['sent', 'entity', 'entity', 'status', 'status', 'relation', 'relation', 'att.appr', 'att.appr', 'att.appr', 'att.level', 'att.level', 'att.tmp', 'att.tmp', 'att.tmp', 'att.tmp', 'att.tmp', 'att.tmp']
+    row2 = ['sent', 'ori', 'norm', 'exist', 'cat', 'loc', 'asso', 'morph', 'dist', 'size', 'num', 'seve', 'emerge', 'no change', 'improve', 'worse', 'reposition', 'resolve']
 
 
     for sec in sections.keys():
@@ -455,7 +448,7 @@ def display_data(data):
             df_sec = pd.DataFrame(filtered_annotations)
 
             # Additional preprocessing steps can go here.
-            df_sec[['ori_ent', 'norm_ent']] = df_sec['ent'].str.split('|', expand=True)
+            df_sec[['ori', 'norm']] = df_sec['ent'].str.split('|', expand=True)
             attr_df = df_sec['attr'].apply(pd.Series)
             df_sec['loc'] = df_sec['rel'].apply(lambda x: x.get('loc') if isinstance(x, dict) else None)
             df_sec['asso'] = df_sec['rel'].apply(lambda x: x.get('asso') if isinstance(x, dict) else None)
@@ -766,38 +759,23 @@ if st.session_state.reviewer_name:
             st.write(f"  - {sec} ({count_per_key[sec]}): {', '.join(sents)}")
     
     feedback_data = {}
-    correct_rows = {}
     for current_section, content in sections.items():
         feedback_data[current_section] = {}
-        correct_rows[current_section] = {}
         st.write("")
         st.markdown(f" <span style='font-size: 2em;'> :clipboard: {current_section}: </span> <span style='font-size: 1.2em;'> {content}</span>", unsafe_allow_html=True)
 
         current_df = dfs[current_section]
+        if isinstance(previous_feedback, pd.DataFrame):    
+            filtered_df = previous_feedback[previous_feedback['section'] == current_section]
 
-        # if previous_feedback:
-        #     annotations_list = previous_feedback.get('feedback', [])
-        #     prev_sec_list = [item for item in annotations_list if item['sec'] == current_section]
-            
-        #     print("annotations_list", annotations_list)
-        #     print("prev_sec_list", prev_sec_list)
-            
-            
-            
-        #     reordered_annotations = []
-            
-        #     if len(prev_sec_list) != 0:    
-        #         for prev_annot in prev_sec_list:
-        #             reordered_dict = {k: prev_annot[k] for k in desired_order if k in prev_annot}
-        #             reordered_annotations.append(reordered_dict)
-                
-        #         for a in reordered_annotations:
-        #             st.write(":sunglasses: Previous Results:")
-        #             st.write(f"  - {a}")
-        #     else:
-        #         error_message = f"No feedback found for this section."
-        #         st.error(error_message, icon="🚨")
-                
+            if not filtered_df.empty:
+                st.write(":sunglasses: Previous Results:")
+                st.write(filtered_df)
+            else:
+                if len(content) != 0 and content != '':
+                    error_message = f"No previous feedback. Please start feedback for this section."
+                    st.error(error_message, icon="🚨")
+                    
         ################################################################################################
         with st.expander(f"**{current_section} DataFrame**"):
             if 'my_dfs' not in st.session_state:
@@ -847,12 +825,14 @@ if st.session_state.reviewer_name:
             
             # # 'Submit Feedback' 버튼
             if st.button('Submit Feedback', key=f"unique_key_for_submit_button_{current_section}"):               
-                save_feedback(jsonfile, st.session_state.my_dfs[current_section], current_section, content, selected_display_name)
+                save_feedback(jsonfile, st.session_state.my_dfs[current_section], current_section, content, selected_display_name, feedback_data)
                 
                 # st.experimental_rerun()
                 now_feedback = load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
+                filtered_df = now_feedback[now_feedback['section'] == current_section]
 
                 st.write(":point_right: Updated Results:")
+                st.write(filtered_df)
             
             else:
                 st.write("No feedback found for this section.")
