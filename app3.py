@@ -41,12 +41,12 @@ drive_service = build('drive', 'v3', credentials=credentials)
 drive_info = drive_service.about().get(fields='storageQuota').execute()
 
 # # 용량 정보 출력
-# total_space = int(drive_info['storageQuota']['limit'])
-# used_space = int(drive_info['storageQuota']['usage'])
+total_space = int(drive_info['storageQuota']['limit'])
+used_space = int(drive_info['storageQuota']['usage'])
 
-# print(f"Total Space: {total_space / 1e9} GB")
-# print(f"Used Space: {used_space / 1e9} GB")
-# print(f"Free Space: {(total_space - used_space) / 1e9} GB")
+print(f"Total Space: {total_space / 1e9} GB")
+print(f"Used Space: {used_space / 1e9} GB")
+print(f"Free Space: {(total_space - used_space) / 1e9} GB")
 
 editable = True
 # grid_height = "100%"
