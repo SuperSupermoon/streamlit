@@ -80,7 +80,7 @@ def upload_to_drive(filename, filedata, folder_id=None):
     file = request.execute()
 
     # 파일의 ID와 부모 폴더 정보를 출력합니다.
-    # print(f"Uploaded file with name {file.get('name')}, ID {file.get('id')} to parent(s) {file.get('parents')}")
+    print(f"Uploaded file with name {file.get('name')}, ID {file.get('id')} to parent(s) {file.get('parents')}")
 
 
 def create_folder(folder_name, parent_folder_id=None):
