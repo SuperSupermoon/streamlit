@@ -514,7 +514,10 @@ if not st.session_state.reviewer_name:
             st.write("""
             ## 소개
             이 앱은 GPT-4를 통한 entity-relation-attribute 추출 결과에 대한 피드백을 위한 도구입니다. 
-            리뷰어가 피드백을 제공할 총 데이터는 평균 10.07개의 study sequence를 갖는 293명의 환자로부터 얻어진 3,269개의 리포트입니다. 최종 완료된 리뷰는 테스트 세트로 사용될 예정입니다.
+            
+            리뷰어가 피드백을 제공할 총 데이터는 평균 10.07개의 study sequence를 갖는 293명의 환자로부터 얻어진 3,269개의 리포트입니다.
+            
+            최종 완료된 리뷰는 테스트 세트로 사용될 예정입니다.
             
             ## 시작하기 전에
             1. **입력은 영어로 작성 해주세요.**
@@ -552,8 +555,11 @@ if not st.session_state.reviewer_name:
             st.write("""
 
             ## Introduction
-            This app serves as a tool for providing feedback on the entity-relation-attribute extraction results via GPT-4. 
-            Reviewers will work with a total of 3,269 reports from 293 patients, each with an average of 10.07 study sequences. The finalized reviews are intended for use in test set.
+            This app serves as a tool for providing feedback on the entity-relation-attribute extraction results via GPT-4-turbo. 
+            
+            Reviewers will work with a total of 3,269 reports from 293 patients, each with an average of 10.07 study sequences.
+            
+            The finalized reviews are intended for use in test set.
 
             ## Before You Start
             1. **Please use English for feedback.**
@@ -595,39 +601,33 @@ if not st.session_state.reviewer_name:
 
             if st.session_state.show_cof:
                 st.markdown("""
-            - COF (Clinical Objective Findings)
-            
-                Refers to evidence-based medical information obtained through lab tests, physical exam, and other diagnostic procedures that are not based on chest x-ray imaging.
+                - COF (Clinical Objective Findings)
                 
-                ex) 'hemoglobin levels', 'white blood cell count', 'liver function tests','heart rate', 'Systemic inflammatory response syndrom (SIRS)', 'temperature'
-            
-            - SYM (Symptom)
-            
-                A subjective indication of a disease or a change in condition as perceived by the patient. This is based on personal experiences and feelings, and they are not directly measurable.
+                    Evidence-based medical information obtained through lab tests, physical exams, and other diagnostic procedures not based on chest x-ray imaging.
+                    
+                    ex) 'hemoglobin levels', 'white blood cell count', 'liver function tests','heart rate', 'Systemic inflammatory response syndrom (SIRS)', 'temperature'
                 
-                ex) 'fatigue', 'cough', 'shortness of breath', 'vomiting'
-            
-            - ROF-ANAT (Radiological objective findings-Anatomy)
-            
-                Refers to anatomical finding based solely on what is observable within the given image. It encompasses any discernible medical findings visible in the image itself, not inferences based on the patient's history or results from previous studies.
+                - SYM (Symptom)
+                    
+                    Subjective indications of a disease or a change in condition as perceived by the patient, not directly measurable.
+                    
+                    ex) 'fatigue', 'cough', 'shortness of breath', 'vomiting'
                 
-                ex) 'Lung', 'Cardiomediastinal silhouette'
-            
-            - ROF-PATH (Radiological objective findings-Pathology)
-            
-                Refers to pathological finding based solely on what is observable within the given image. It encompasses any discernible medical findings visible in the image itself, not inferences based on the patient's history or results from previous studies.
+                - ROF (Radiological objective findings)
+                    
+                    Identifiable radiological findings from a chest X-ray image alone, without external information such as the patient's history or other source results.
+                    
+                    ex) 'opacity', 'thickening', 'density', 'lung volume', 'collapse','consolidation', 'inﬁltration', 'atelectasis', 'pulmonary edema', 'pleural effusion', 'bronchiectasis', 'calciﬁcation', 'pneumothorax', 'hydropneumothorax', 'lesion', 'mass', 'nodule', 'fracture', 'hyperaeration', 'Cyst', 'Bullae', 'Scoliosis'
                 
-                ex) 'Opacity', 'Thickening', 'Consolidation', 'Inﬁltration', 'Atelectasis', 'Collapse', 'Pulmonary Edema', 'Congestion', 'Reticular Markings, ILD Pattern', 'Pleural Effusion', 'Bronchiectasis', 'Calciﬁcation', 'Pneumomediastinum', 'Pneumoperitoneum', 'Pneumothorax', 'Hydropneumothorax', 'Lesion', 'Mass', 'Nodule', 'Fracture', 'Hyperaeration', 'Cyst', 'Bullae', 'Hemidiaphragm', 'Eventration', 'Hernia', 'Scoliosis', 'Osteoarthritis', 'Fibrosis', 'Tortuous Aorta'
-            
-            - RSF (Radiological subjective findings)
+                - RSF (Radiological subjective findings)
+                    
+                    Diagnosis based on a physician's judgment or reasoning incorporating the chest x-ray image and external information like patient history or lab findings.       
+                    
+                    ex) 'pneumonia', 'heart failure', 'copd', 'granulomatous disease', 'interstitial lung disease', 'goiter', 'lung cancer', 'pericarditis', 'pulmonary hypertension', 'tumor'
                 
-                Refers to diagnosis derived from a physician's subjective judgment or reasoning, based not only on the given image but also on external information such as the patient's history, lab findings, or results from prior studies.
-                
-                ex) 'pneumonia', 'ﬂuid overload/heart failure', 'copd/emphysema', 'granulomatous disease', 'interstitial lung disease', 'goiter', 'lung cancer', 'aspiration', 'alveolar hemorrhage', 'pericardial effusion', 'pericarditis', 'pulmonary hypertension', 'tumor'
-            
-            - DEV (Medical devices)
-                
-                ex) chest tube, mediastinal drain, pigtail catheter, endotracheal tube, sternotomy, etc.""")
+                - OTH (Other object)
+                    
+                    Pertains to foreign objects (e.g., 'metal fragments', 'glass', 'bullets') or medical devices (e.g., 'chest tubes', 'endotracheal tubes') observed in chest X-ray images.""")
 
             if st.button("4 Existence", key='btn_sym'):
                 st.session_state.show_sym = not st.session_state.show_sym
@@ -635,7 +635,7 @@ if not st.session_state.reviewer_name:
             if st.session_state.show_sym:
                 st.markdown("""
             
-            2. Existence (exist): Based on 'Definitive' or 'Tentative' diagnosis, and categorize it as 'Positively mentioned' (DP or TP); present or abnormal, 'Negatively mentioned' (DN or TN); absent or normal.
+            2. Status: Classify entity's status as 'Definitive' or 'Tentative' diagnosis, and categorize it as 'Positively mentioned'; present or abnormal, 'Negatively mentioned'; absent or normal. Answer as 'DP', 'DN' for Definitive, and 'TP', 'TN' for Tentative diagnoses.
             """)
         
             if st.button("2 Relation", key='btn_rel'):
@@ -643,11 +643,7 @@ if not st.session_state.reviewer_name:
 
             if st.session_state.show_rel:
                 st.markdown("""
-            1. Location (loc): If the spatial concept of target entity exist, normalize the location using the given list: ['right lung', 'right apical zone', 'right lower lung zone', 'right hilar structures', 'left lung', 'left apical zone', 'left lower lung zone', 'left hilar structures', 'mediastinum', 'cardiac silhouette', 'right costophrenic angle', 'left costophrenic angle', 'upper mediastinum', 'spine', 'right clavicle', 'left clavicle', 'left mid lung zone', 'right hemidiaphragm', 'left hemidiaphragm', 'svc', 'abdomen', 'trachea', 'right upper lung zone', 'left upper lung zone', 'aortic arch', 'right mid lung zone', 'right atrium', 'cavoatrial junction', 'carina'].
-                But, if normalization difficult, extract the concept as is.
-                
-            2. Clinical association (asso): Refers to attributes that describe a relationship in which a particular medical finding or condition (A) is either caused by or closely linked with another finding or condition (B).
-                ex) 1. 'pnenumonia' associated with 'lung opacity', 'fatigue'. 2. 'pulmonary edema' associated with 'lung opacity', 'shortness of breath', 'leg swelling'. 3. 'lung opacity' associated with 'nipple shadow'.
+            3. Location: The precise anatomical area or structure where the observation is noted, encompassing both broad regions (left, right, bileteral) and specific biological structures.
                 """)
                 
             if st.button("11 Attribution", key='btn_attr'):
