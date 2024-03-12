@@ -94,7 +94,11 @@ def create_folder(folder_name, parent_folder_id=None):
         fields="files(id, name)"
     ).execute()
 
+    print("results", results)
+    
     items = results.get('files', [])
+    
+    print("items", items)
     
     # 폴더가 이미 존재하는 경우
     if len(items) > 0:
@@ -106,10 +110,14 @@ def create_folder(folder_name, parent_folder_id=None):
         'mimeType': 'application/vnd.google-apps.folder'
     }
     print("folder_name", folder_name)
+    
     if parent_folder_id:
         folder_metadata['parents'] = [parent_folder_id]
         
     folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+    
+    print("folder['id']", folder['id'])
+    
     return folder['id']
 
 
@@ -214,7 +222,9 @@ def save_feedback(jsonfile, input_feedback, current_section, section_texts, disp
         feedback_data['section'] = current_section    
         feedback_data['report'] = section_texts
 
+    # print("st.session_state.reviewer_name", st.session_state.reviewer_name)
     # 폴더 생성 및 데이터 저장
+    
     reviewer_folder_id = create_folder(st.session_state.reviewer_name)
     patient_folder_id = create_folder(jsonfile['subject'], reviewer_folder_id)
     upload_to_drive(f"{display_names}.csv", feedback_data, patient_folder_id)
@@ -662,8 +672,77 @@ if not st.session_state.reviewer_name:
                 - Replacement of DEV (replace): Refers to the altered position of a medical device inside a patient compared to prior studies. (e.g., displaced, repositioned).
                 - Resolve (resolve): Refers to the complete disappearance of a specific medical finding or device from imaging. (e.g., resolved, cleared).
                 """)
+
+
+def find_folder_id_by_name(service, folder_name):
+    # 폴더 이름으로 폴더 검색
+    results = service.files().list(
+        q=f"mimeType='application/vnd.google-apps.folder' and name='{folder_name}'",
+        fields="files(id, name)"
+    ).execute()
+    folders = results.get('files', [])
+    if not folders:
+        print(f"No folder found with name: {folder_name}")
+        return None
+    # 첫 번째 검색 결과의 폴더 ID 반환
+    folder_id = folders[0]['id']
+    print(f"Folder ID for '{folder_name}': {folder_id}")
+    return folder_id
+
+def download_folder_by_name(service, folder_name, local_path):
+    folder_id = find_folder_id_by_name(service, folder_name)
+    if folder_id:
+        download_folder(service, folder_id, local_path)
+    else:
+        print("Failed to find folder or download content.")
                                         
             
+def download_folder(service, folder_id, local_path):
+    def download_file(file_id, file_name, local_file_path):
+        request = service.files().get_media(fileId=file_id)
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+        with open(local_file_path, 'wb') as f:
+            fh.seek(0)
+            f.write(fh.read())
+        print(f"Downloaded {file_name} to {local_file_path}")
+
+    def list_files_in_folder(folder_id, local_path):
+        # 폴더가 없으면 생성
+        if not os.path.exists(local_path):
+            os.makedirs(local_path)
+
+        results = service.files().list(
+            q=f"'{folder_id}' in parents",
+            orderBy='createdTime desc',
+            fields="nextPageToken, files(id, name, mimeType, createdTime)"
+        ).execute()
+        
+        items = results.get('files', [])
+        latest_files = {}
+
+        # 동일한 이름을 가진 파일 중 최신 파일만 선택
+        for item in items:
+            if item['mimeType'] == 'application/vnd.google-apps.folder':
+                # 하위 폴더에 대해 재귀적으로 처리
+                new_local_path = os.path.join(local_path, item['name'])
+                list_files_in_folder(item['id'], new_local_path)
+            else:
+                if item['name'] not in latest_files:
+                    latest_files[item['name']] = item
+
+        # 저장된 최신 파일들을 다운로드
+        for file_info in latest_files.values():
+            local_file_path = os.path.join(local_path, file_info['name'])
+            download_file(file_info['id'], file_info['name'], local_file_path)
+
+    # 최상위 폴더 이름 가져오기 (로컬 경로 생성에 사용)
+    folder_name = service.files().get(fileId=folder_id, fields='name').execute().get('name')
+    top_local_path = os.path.join(local_path, folder_name)
+    list_files_in_folder(folder_id, top_local_path)
 
 # If reviewer_name is set, display the rest of the app
 if st.session_state.reviewer_name:    
@@ -829,8 +908,11 @@ if st.session_state.reviewer_name:
             updated_df = pd.DataFrame(response['data'])
             st.session_state.my_dfs[current_section] = updated_df
             
+            # 사용 예시: Google Drive에서 파일 목록을 가져와 출력
+            # download_folder_by_name(drive_service, 'jh', '/Users/super_moon/Desktop/streamlit/feedback_result')
+
             # # 'Submit Feedback' 버튼
-            if st.button('Submit Feedback', key=f"unique_key_for_submit_button_{current_section}"):               
+            if st.button('Submit Feedback', key=f"unique_key_for_submit_button_{current_section}"):
                 save_feedback(jsonfile, st.session_state.my_dfs[current_section], current_section, content, selected_display_name, feedback_data)
                 
                 # st.experimental_rerun()
@@ -843,3 +925,6 @@ if st.session_state.reviewer_name:
 
             else:
                 st.write("No feedback found for this section.")
+                
+                
+                
