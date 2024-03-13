@@ -53,7 +53,7 @@ editable = True
 grid_width = "100%"
 
 
-json_folder_path = './test2/'
+json_folder_path = './test/'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
 st.set_page_config(layout="wide")
 
@@ -75,8 +75,8 @@ def upload_to_drive(filename, filedata, folder_id=None):
     request = drive_service.files().create(
         body=file_metadata,
         media_body=media,
-        fields='id, name, parents'
-    )
+        fields='id, name, parents')
+    
     file = request.execute()
 
     # 파일의 ID와 부모 폴더 정보를 출력합니다.
@@ -224,7 +224,6 @@ def save_feedback(jsonfile, input_feedback, current_section, section_texts, disp
 
     # print("st.session_state.reviewer_name", st.session_state.reviewer_name)
     # 폴더 생성 및 데이터 저장
-    
     reviewer_folder_id = create_folder(st.session_state.reviewer_name)
     patient_folder_id = create_folder(jsonfile['subject'], reviewer_folder_id)
     upload_to_drive(f"{display_names}.csv", feedback_data, patient_folder_id)
@@ -450,8 +449,8 @@ def display_data(data):
 
     dfs = {}
     aggrid_grouped_options = {}
-    row1 = ['sent', 'entity', 'status', 'status', 'relation', 'attr.appr', 'attr.appr', 'attr.appr', 'attr.level', 'attr.level', 'attr.tmp', 'attr.tmp', 'attr.tmp', 'attr.tmp', 'attr.tmp', 'attr.tmp']
-    row2 = ['sent', 'ent', 'status', 'cat', 'loc', 'morph', 'dist', 'size', 'num', 'seve', 'emerge', 'no change', 'improve', 'worse', 'reposition', 'resolve']
+    row1 = ['sent', 'entity', 'entity', 'status', 'status', 'relation', 'relation', 'att.appr', 'att.appr', 'att.appr', 'att.level', 'att.level', 'att.tmp', 'att.tmp', 'att.tmp', 'att.tmp', 'att.tmp', 'att.tmp']
+    row2 = ['sent', 'ori', 'norm', 'exist', 'cat', 'loc', 'asso', 'morph', 'dist', 'size', 'num', 'seve', 'emerge', 'no change', 'improve', 'worse', 'reposition', 'resolve']
 
 
     for sec in sections.keys():
@@ -459,26 +458,16 @@ def display_data(data):
         
         # Initialize empty DataFrame with all columns from row2
         df_sec = pd.DataFrame(columns=row2)
-
+        
         if filtered_annotations:
             df_sec = pd.DataFrame(filtered_annotations)
 
-            print("111 df_sec.columns", df_sec.columns)
-            
             # Additional preprocessing steps can go here.
-            # df_sec[['ori', 'norm']] = df_sec['ent'].str.split('|', expand=True)
+            df_sec[['ori', 'norm']] = df_sec['ent'].str.split('|', expand=True)
             attr_df = df_sec['attr'].apply(pd.Series)
-            
-            print("attr_df", attr_df)
-            print("attr_df.columns", attr_df.columns)
-            
-            # df_sec['loc'] = df_sec['rel'].apply(lambda x: x.get('loc') if isinstance(x, dict) else None)
-            # df_sec['asso'] = df_sec['rel'].apply(lambda x: x.get('asso') if isinstance(x, dict) else None)
-            print("df_sec.drop(columns=['attr'])", df_sec.drop(columns=['attr']))
-            print("df_sec.drop(columns=['attr']).join(attr_df)", df_sec.drop(columns=['attr']).join(attr_df))
-            
-            df_sec = df_sec.drop(columns=['attr']).join(attr_df)
-            print("222 df_sec.columns", df_sec.columns)
+            df_sec['loc'] = df_sec['rel'].apply(lambda x: x.get('loc') if isinstance(x, dict) else None)
+            df_sec['asso'] = df_sec['rel'].apply(lambda x: x.get('asso') if isinstance(x, dict) else None)
+            df_sec = df_sec.drop(columns=['ent', 'attr', 'rel']).join(attr_df)
 
         # Reorder columns based on row2 and fill NaN values with empty string
         df_sec = df_sec.reindex(columns=row2).fillna('')
@@ -933,4 +922,4 @@ if st.session_state.reviewer_name:
                 st.write("No feedback found for this section.")
                 
                 
-                
+
