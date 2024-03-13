@@ -75,8 +75,8 @@ def upload_to_drive(filename, filedata, folder_id=None):
     request = drive_service.files().create(
         body=file_metadata,
         media_body=media,
-        fields='id, name, parents'
-    )
+        fields='id, name, parents')
+    
     file = request.execute()
 
     # 파일의 ID와 부모 폴더 정보를 출력합니다.
@@ -224,7 +224,6 @@ def save_feedback(jsonfile, input_feedback, current_section, section_texts, disp
 
     # print("st.session_state.reviewer_name", st.session_state.reviewer_name)
     # 폴더 생성 및 데이터 저장
-    
     reviewer_folder_id = create_folder(st.session_state.reviewer_name)
     patient_folder_id = create_folder(jsonfile['subject'], reviewer_folder_id)
     upload_to_drive(f"{display_names}.csv", feedback_data, patient_folder_id)
