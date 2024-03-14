@@ -673,7 +673,7 @@ if not st.session_state.reviewer_name:
             3. Temporal (tmp) differential diagnosis, which can be categorized as
                 - Emergence (emerg): Refers to the chronological progression or appearance of a medical finding or device. Unlike terms that highlight the comparative change in condition, this concept emphasizes the chronological state, either within a single study or in relation to a sequential study. (e.g., new, old, acute, subacute, chronic, remote, recurrent).
                 - No Change (nchg): Refers to the consistent state or condition that remains unaltered from a prior study. (e.g., no changed, unchanged, similar, persistent)
-                - Improvement (improved): Refers to a positive change or stabilization in a patient's clinical state when compared to a prior assessment. (e.g., improved, decreased, stable)
+                - Improvement (impr): Refers to a positive change or stabilization in a patient's clinical state when compared to a prior assessment. (e.g., improved, decreased, stable)
                 - Worsened (worsened): Refers to the negative change in a patient's clinical state in comparison to a prior assessment. (e.g., worsened, increased)
                 - Replacement of DEV (replace): Refers to the altered position of a medical device inside a patient compared to prior studies. (e.g., displaced, repositioned).
                 - Resolve (resolve): Refers to the complete disappearance of a specific medical finding or device from imaging. (e.g., resolved, cleared).
