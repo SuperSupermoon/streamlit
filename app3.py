@@ -431,6 +431,29 @@ def generate_aggrid_grouped_options(df, row1, row2):
 
     return aggrid_grouped_options
 
+# Define a mapping of column name variations to standard names
+column_variations = {
+    'emerge': ['emerg', 'emerge'],
+    'no change': ['nchg', 'no change'],
+    'distribution': ['dist', 'distribution', 'distribute'],
+    'severity': ['sev', 'severity', 'seve'],
+    'location': ['loc', 'location'],
+    'morphology': ['mor', 'morp', 'morph'],
+    'improved': ['impr', 'improve', 'improved', 'imp', 'improv', 'improvement'],
+    'reposition': ['repl', 'replace'],
+    'resolve': ['res', 'resolve', 'resolved', 'resolv'],
+    'comparision': ['com', 'comp', 'comparision', 'compare'],
+}
+
+# Function to map variations to standard column names
+def standardize_columns(df, variations_map):
+    for standard_name, variations in variations_map.items():
+        for variation in variations:
+            if variation in df.columns:
+                df.rename(columns={variation: standard_name}, inplace=True)
+    return df
+
+
 def display_data(data):
     sections = {
         "HIST": data.get("History", ""),
@@ -440,18 +463,20 @@ def display_data(data):
     
     annotations = data.get('annotations', [])
 
+    print("annotations", annotations)
     # annotations가 문자열 형태라면 JSON 객체로 변환
     if isinstance(annotations, str):
         try:
             annotations = json.loads(annotations)
+            
         except json.JSONDecodeError:
             st.error(f"Failed to parse annotations in file: {selected_file}")
             annotations = []
 
     dfs = {}
     aggrid_grouped_options = {}
-    row1 = ['sent', 'entity', 'status', 'status', 'relation', 'attr.appr', 'attr.appr', 'attr.appr', 'attr.level', 'attr.level', 'attr.tmp', 'attr.tmp', 'attr.tmp', 'attr.tmp', 'attr.tmp', 'attr.tmp']
-    row2 = ['sent', 'ent', 'status', 'cat', 'loc', 'morph', 'dist', 'size', 'num', 'seve', 'emerge', 'no change', 'improve', 'worse', 'reposition', 'resolve']
+    row1 = ['sentence', 'entity', 'status', 'status', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal']
+    row2 = ['sent', 'ent', 'status', 'cat', 'location', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
 
 
     for sec in sections.keys():
@@ -462,6 +487,8 @@ def display_data(data):
 
         if filtered_annotations:
             df_sec = pd.DataFrame(filtered_annotations)
+            
+            print("df_sec", df_sec)
 
             # 모든 행의 'attr' 값이 빈 사전, None, 또는 빈 문자열인지 확인
             all_empty = df_sec['attr'].apply(lambda x: x == {} or x is None or x == '').all()
@@ -481,6 +508,13 @@ def display_data(data):
                     for key, compound_val in attr_dict.items():
                         # 콤마로 구분된 다중 값을 분리
                         compound_values_processed = False
+
+                        if isinstance(compound_val, list):
+                            compound_val = ', '.join(compound_val)
+
+                        
+                        print("compound_val", compound_val)
+                        
                         for val in compound_val.split(', '):
                             # '|'로 키와 값을 분리
                             parts = val.split('|')
@@ -500,11 +534,17 @@ def display_data(data):
                 df_sec = pd.DataFrame(attr_data)
             df_sec = df_sec.drop(columns=['attr'], errors='ignore')
 
+            # Standardize column names based on variations
+            df_sec = standardize_columns(df_sec, column_variations)
+            
         extra_columns = set(df_sec.columns) - set(row2)
         if extra_columns and not extra_columns.issubset({'sent_idx', 'sec'}):
             raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
 
-        df_sec = df_sec.reindex(columns=row2).fillna('')        
+        df_sec = df_sec.reindex(columns=row2).fillna('')
+        
+        print("df_sec", df_sec)
+        
         
         dfs[sec] = df_sec
         aggrid_grouped_options[sec] = generate_aggrid_grouped_options(df_sec, row1, row2)
@@ -684,7 +724,7 @@ if not st.session_state.reviewer_name:
 
             if st.session_state.show_attr:
                 st.markdown("""
-            1. Appearance (appr), which can be categorized as
+            1. Appearance (appearance), which can be categorized as
                 - Morphology (mor): Physical form, structure, shape, pattern or texture of an object or substance. (e.g., 'irregular', 'rounded', 'dense', 'ground-glass',  'patchy', 'linear', 'plate-like', 'nodular')
                 - Distribution (dist): Arrangement, spread of objects or elements within a particular area or space (e.g., 'focal', 'multifocal/multi-focal', 'scattered', 'hazy', 'widespread')
                 - Size (size): Physical dimensions or overall magnitude of an entity ('small', 'large', 'massive', 'subtle', 'minor', 'xx cm')
