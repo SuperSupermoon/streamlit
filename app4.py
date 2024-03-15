@@ -904,7 +904,7 @@ if st.session_state.reviewer_name:
             st.session_state.my_dfs[current_section] = updated_df
             
             # 사용 예시: Google Drive에서 파일 목록을 가져와 출력
-            # download_folder_by_name(drive_service, 'jh', '/Users/super_moon/Desktop/streamlit/feedback_result')
+            # download_folder_by_name(drive_service, 'jh', '/mnt/c/Users/gkrdl/Downloads/streamlit/feedback_result')
 
             # # 'Submit Feedback' 버튼
             if st.button('Submit Feedback', key=f"unique_key_for_submit_button_{current_section}"):

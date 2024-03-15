@@ -463,25 +463,48 @@ def display_data(data):
         if filtered_annotations:
             df_sec = pd.DataFrame(filtered_annotations)
 
-            print("111 df_sec.columns", df_sec.columns)
-            
-            # Additional preprocessing steps can go here.
-            # df_sec[['ori', 'norm']] = df_sec['ent'].str.split('|', expand=True)
-            attr_df = df_sec['attr'].apply(pd.Series)
-            
-            print("attr_df", attr_df)
-            print("attr_df.columns", attr_df.columns)
-            
-            # df_sec['loc'] = df_sec['rel'].apply(lambda x: x.get('loc') if isinstance(x, dict) else None)
-            # df_sec['asso'] = df_sec['rel'].apply(lambda x: x.get('asso') if isinstance(x, dict) else None)
-            print("df_sec.drop(columns=['attr'])", df_sec.drop(columns=['attr']))
-            print("df_sec.drop(columns=['attr']).join(attr_df)", df_sec.drop(columns=['attr']).join(attr_df))
-            
-            df_sec = df_sec.drop(columns=['attr']).join(attr_df)
-            print("222 df_sec.columns", df_sec.columns)
+            # 모든 행의 'attr' 값이 빈 사전, None, 또는 빈 문자열인지 확인
+            all_empty = df_sec['attr'].apply(lambda x: x == {} or x is None or x == '').all()
 
-        # Reorder columns based on row2 and fill NaN values with empty string
-        df_sec = df_sec.reindex(columns=row2).fillna('')
+            # all_empty가 False인 경우에만 attr 관련 처리 수행
+            if not all_empty:
+                attr_data = []
+                for _, row in df_sec.iterrows():
+                    attr_dict = row.get('attr', {})
+                    
+                    if not attr_dict:
+                        # attr_dict가 비어 있으면, 기존 row의 데이터를 유지
+                        attr_data.append(row.to_dict())
+                        continue  # 다음 행으로 넘어감
+
+                    # attr_dict에 데이터가 있는 경우 처리
+                    for key, compound_val in attr_dict.items():
+                        # 콤마로 구분된 다중 값을 분리
+                        compound_values_processed = False
+                        for val in compound_val.split(', '):
+                            # '|'로 키와 값을 분리
+                            parts = val.split('|')
+                            if len(parts) == 2:
+                                # 분리된 값이 정확히 두 부분일 때, 새로운 키와 값으로 분리하여 사용
+                                new_key, new_val = parts
+                                attr_data.append({**row.to_dict(), new_key: new_val})
+                                compound_values_processed = True
+                            else:
+                                # '|'가 없거나 두 개 이상 포함되어 있는 경우, 에러 처리나 다른 로직 적용
+                                print(f"Unexpected format in 'attr' value: {val}")
+                        
+                        if not compound_values_processed:
+                            # 콤마로 구분된 값이 처리되지 않았다면, 즉 '|'로 분리할 수 없는 경우
+                            # 기존 row의 데이터를 그대로 유지
+                            attr_data.append(row.to_dict())
+                df_sec = pd.DataFrame(attr_data)
+            df_sec = df_sec.drop(columns=['attr'], errors='ignore')
+
+        extra_columns = set(df_sec.columns) - set(row2)
+        if extra_columns and not extra_columns.issubset({'sent_idx', 'sec'}):
+            raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
+
+        df_sec = df_sec.reindex(columns=row2).fillna('')        
         
         dfs[sec] = df_sec
         aggrid_grouped_options[sec] = generate_aggrid_grouped_options(df_sec, row1, row2)
