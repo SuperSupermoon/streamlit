@@ -475,8 +475,8 @@ def display_data(data):
 
     dfs = {}
     aggrid_grouped_options = {}
-    row1 = ['sentence', 'entity', 'status', 'status', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal']
-    row2 = ['sent', 'ent', 'status', 'cat', 'location', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
+    row1 = ['sentence', 'sentence','entity', 'status', 'status', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal']
+    row2 = ['sent', 'sent_idx','ent', 'status', 'cat', 'location', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
 
 
     for sec in sections.keys():
@@ -532,7 +532,10 @@ def display_data(data):
                             # 기존 row의 데이터를 그대로 유지
                             attr_data.append(row.to_dict())
                 df_sec = pd.DataFrame(attr_data)
+            
+            print("11 df_sec", df_sec.columns)
             df_sec = df_sec.drop(columns=['attr'], errors='ignore')
+            
 
             # Standardize column names based on variations
             df_sec = standardize_columns(df_sec, column_variations)
@@ -542,9 +545,33 @@ def display_data(data):
             raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
 
         df_sec = df_sec.reindex(columns=row2).fillna('')
+        print("22 df_sec", df_sec['sent_idx'])
         
-        print("df_sec", df_sec)
+        ########################################################################################################################################################################################
+        group_by_columns = ['sent', 'sent_idx', 'ent', 'status', 'cat', 'location']
+
+        # Determine columns to be aggregated
+        aggregate_columns = ['morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
+
         
+        # Ensure each aggregate column is a list (this simplifies combining them later)
+        for column in aggregate_columns:
+            df_sec[column] = df_sec[column].apply(lambda x: [x] if pd.notnull(x) else [])
+
+        # Group by the specified columns and aggregate the rest
+        df_sec = df_sec.groupby(group_by_columns, as_index=False).agg({col: 'sum' for col in aggregate_columns})
+
+        # Optionally, remove duplicates from each aggregated list
+        for column in aggregate_columns:
+            df_sec[column] = df_sec[column].apply(lambda x: list(set(x)))
+
+        # Your aggregated_df now contains combined information for 'morphology' to 'resolve'
+        # based on unique combinations of 'sent', 'ent', 'status', 'cat', and 'location'
+        sorted_df = df_sec.sort_values(by='sent_idx', ascending=True)
+
+        print("aggregated_df", sorted_df)
+        print("33 df_sec", sorted_df.columns)
+        ########################################################################################################################################################################################
         
         dfs[sec] = df_sec
         aggrid_grouped_options[sec] = generate_aggrid_grouped_options(df_sec, row1, row2)
