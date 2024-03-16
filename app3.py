@@ -453,6 +453,9 @@ def standardize_columns(df, variations_map):
                 df.rename(columns={variation: standard_name}, inplace=True)
     return df
 
+def clean_list(value_list):
+    # Remove empty strings and strings consisting only of commas and/or spaces
+    return [item for item in value_list if item.strip(',') and item.strip()]
 
 def display_data(data):
     sections = {
@@ -563,14 +566,16 @@ def display_data(data):
 
         # Optionally, remove duplicates from each aggregated list
         for column in aggregate_columns:
+            df_sec[column] = df_sec[column].apply(clean_list)
             df_sec[column] = df_sec[column].apply(lambda x: list(set(x)))
 
         # Your aggregated_df now contains combined information for 'morphology' to 'resolve'
         # based on unique combinations of 'sent', 'ent', 'status', 'cat', and 'location'
-        sorted_df = df_sec.sort_values(by='sent_idx', ascending=True)
+        df_sec = df_sec.sort_values(by='sent_idx', ascending=True)
 
-        print("aggregated_df", sorted_df)
-        print("33 df_sec", sorted_df.columns)
+        print("aggregated_df", df_sec['size'])
+        print("33 df_sec", df_sec.columns)
+        df_sec = df_sec.drop(columns=['sent_idx'], errors='ignore')
         ########################################################################################################################################################################################
         
         dfs[sec] = df_sec
