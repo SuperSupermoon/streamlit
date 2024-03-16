@@ -445,6 +445,11 @@ column_variations = {
     'comparision': ['com', 'comp', 'comparision', 'compare'],
 }
 
+group_by_columns = ['sent', 'sent_idx', 'ent', 'status', 'cat', 'location']
+
+# Determine columns to be aggregated
+aggregate_columns = ['morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
+
 # Function to map variations to standard column names
 def standardize_columns(df, variations_map):
     for standard_name, variations in variations_map.items():
@@ -550,13 +555,7 @@ def display_data(data):
         df_sec = df_sec.reindex(columns=row2).fillna('')
         print("22 df_sec", df_sec['sent_idx'])
         
-        ########################################################################################################################################################################################
-        group_by_columns = ['sent', 'sent_idx', 'ent', 'status', 'cat', 'location']
-
-        # Determine columns to be aggregated
-        aggregate_columns = ['morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
-
-        
+        #######################################################################################################################################################################################
         # Ensure each aggregate column is a list (this simplifies combining them later)
         for column in aggregate_columns:
             df_sec[column] = df_sec[column].apply(lambda x: [x] if pd.notnull(x) else [])
@@ -567,7 +566,7 @@ def display_data(data):
         # Optionally, remove duplicates from each aggregated list
         for column in aggregate_columns:
             df_sec[column] = df_sec[column].apply(clean_list)
-            df_sec[column] = df_sec[column].apply(lambda x: list(set(x)))
+            # df_sec[column] = df_sec[column].apply(lambda x: list(set(x)))
 
         # Your aggregated_df now contains combined information for 'morphology' to 'resolve'
         # based on unique combinations of 'sent', 'ent', 'status', 'cat', and 'location'
@@ -796,7 +795,21 @@ def download_folder_by_name(service, folder_name, local_path):
         download_folder(service, folder_id, local_path)
     else:
         print("Failed to find folder or download content.")
-                                        
+
+def list_to_string(value):
+    # If the input value is None, return None immediately
+    if value is None:
+        return None
+
+    # If the input value is not a list, treat it as a single-element list
+    if not isinstance(value, list):
+        value = [value]
+
+    # Clean the list: Remove duplicates, empty strings, and strip whitespace
+    cleaned_list = list(set(item.strip() for item in value if item and item.strip()))
+
+    # Convert to string and return None if the cleaned list is empty
+    return ', '.join(cleaned_list) if cleaned_list else None                         
             
 def download_folder(service, folder_id, local_path):
     def download_file(file_id, file_name, local_file_path):
@@ -1007,9 +1020,12 @@ if st.session_state.reviewer_name:
             )
             
             updated_df = pd.DataFrame(response['data'])
+            for column in aggregate_columns:
+                # print("updated_df[column]", updated_df[column])
+                updated_df[column] = updated_df[column].apply(list_to_string)
             st.session_state.my_dfs[current_section] = updated_df
-            
-            # 사용 예시: Google Drive에서 파일 목록을 가져와 출력
+
+
             # download_folder_by_name(drive_service, 'jh', '/Users/super_moon/Desktop/streamlit/feedback_result')
 
             # # 'Submit Feedback' 버튼
