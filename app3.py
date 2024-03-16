@@ -799,7 +799,7 @@ def download_folder_by_name(service, folder_name, local_path):
 def list_to_string(value):
     # If the input value is None, return None immediately
     if value is None:
-        return None
+        return ''
 
     # If the input value is not a list, treat it as a single-element list
     if not isinstance(value, list):
@@ -809,7 +809,7 @@ def list_to_string(value):
     cleaned_list = list(set(item.strip() for item in value if item and item.strip()))
 
     # Convert to string and return None if the cleaned list is empty
-    return ', '.join(cleaned_list) if cleaned_list else None                         
+    return ', '.join(cleaned_list) if cleaned_list else ''                         
             
 def download_folder(service, folder_id, local_path):
     def download_file(file_id, file_name, local_file_path):
