@@ -94,11 +94,11 @@ def create_folder(folder_name, parent_folder_id=None):
         fields="files(id, name)"
     ).execute()
 
-    print("results", results)
+    # print("results", results)
     
     items = results.get('files', [])
     
-    print("items", items)
+    # print("items", items)
     
     # 폴더가 이미 존재하는 경우
     if len(items) > 0:
@@ -109,14 +109,14 @@ def create_folder(folder_name, parent_folder_id=None):
         'name': folder_name,
         'mimeType': 'application/vnd.google-apps.folder'
     }
-    print("folder_name", folder_name)
+    # print("folder_name", folder_name)
     
     if parent_folder_id:
         folder_metadata['parents'] = [parent_folder_id]
         
     folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
     
-    print("folder['id']", folder['id'])
+    # print("folder['id']", folder['id'])
     
     return folder['id']
 
@@ -471,7 +471,7 @@ def display_data(data):
     
     annotations = data.get('annotations', [])
 
-    print("annotations", annotations)
+    # print("annotations", annotations)
     # annotations가 문자열 형태라면 JSON 객체로 변환
     if isinstance(annotations, str):
         try:
@@ -496,7 +496,7 @@ def display_data(data):
         if filtered_annotations:
             df_sec = pd.DataFrame(filtered_annotations)
             
-            print("df_sec", df_sec)
+            # print("df_sec", df_sec)
 
             # 모든 행의 'attr' 값이 빈 사전, None, 또는 빈 문자열인지 확인
             all_empty = df_sec['attr'].apply(lambda x: x == {} or x is None or x == '').all()
@@ -520,8 +520,7 @@ def display_data(data):
                         if isinstance(compound_val, list):
                             compound_val = ', '.join(compound_val)
 
-                        
-                        print("compound_val", compound_val)
+                        # print("compound_val", compound_val)
                         
                         for val in compound_val.split(', '):
                             # '|'로 키와 값을 분리
@@ -541,7 +540,7 @@ def display_data(data):
                             attr_data.append(row.to_dict())
                 df_sec = pd.DataFrame(attr_data)
             
-            print("11 df_sec", df_sec.columns)
+            # print("11 df_sec", df_sec.columns)
             df_sec = df_sec.drop(columns=['attr'], errors='ignore')
             
 
@@ -553,7 +552,7 @@ def display_data(data):
             raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
 
         df_sec = df_sec.reindex(columns=row2).fillna('')
-        print("22 df_sec", df_sec['sent_idx'])
+        # print("22 df_sec", df_sec['sent_idx'])
         
         #######################################################################################################################################################################################
         # Ensure each aggregate column is a list (this simplifies combining them later)
@@ -572,8 +571,8 @@ def display_data(data):
         # based on unique combinations of 'sent', 'ent', 'status', 'cat', and 'location'
         df_sec = df_sec.sort_values(by='sent_idx', ascending=True)
 
-        print("aggregated_df", df_sec['size'])
-        print("33 df_sec", df_sec.columns)
+        # print("aggregated_df", df_sec['size'])
+        # print("33 df_sec", df_sec.columns)
         df_sec = df_sec.drop(columns=['sent_idx'], errors='ignore')
         ########################################################################################################################################################################################
         
@@ -1025,6 +1024,8 @@ if st.session_state.reviewer_name:
                 updated_df[column] = updated_df[column].apply(list_to_string)
             st.session_state.my_dfs[current_section] = updated_df
 
+            # print("jsonfile", jsonfile)
+            # print("st.session_state.my_dfs[current_section]", st.session_state.my_dfs[current_section])
 
             # download_folder_by_name(drive_service, 'jh', '/Users/super_moon/Desktop/streamlit/feedback_result')
 
