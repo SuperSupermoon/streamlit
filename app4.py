@@ -53,7 +53,7 @@ editable = True
 grid_width = "100%"
 
 
-json_folder_path = './test/'
+json_folder_path = './test2/'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
 st.set_page_config(layout="wide")
 
@@ -75,8 +75,8 @@ def upload_to_drive(filename, filedata, folder_id=None):
     request = drive_service.files().create(
         body=file_metadata,
         media_body=media,
-        fields='id, name, parents')
-    
+        fields='id, name, parents'
+    )
     file = request.execute()
 
     # 파일의 ID와 부모 폴더 정보를 출력합니다.
@@ -94,11 +94,11 @@ def create_folder(folder_name, parent_folder_id=None):
         fields="files(id, name)"
     ).execute()
 
-    print("results", results)
+    # print("results", results)
     
     items = results.get('files', [])
     
-    print("items", items)
+    # print("items", items)
     
     # 폴더가 이미 존재하는 경우
     if len(items) > 0:
@@ -109,14 +109,14 @@ def create_folder(folder_name, parent_folder_id=None):
         'name': folder_name,
         'mimeType': 'application/vnd.google-apps.folder'
     }
-    print("folder_name", folder_name)
+    # print("folder_name", folder_name)
     
     if parent_folder_id:
         folder_metadata['parents'] = [parent_folder_id]
         
     folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
     
-    print("folder['id']", folder['id'])
+    # print("folder['id']", folder['id'])
     
     return folder['id']
 
@@ -224,6 +224,7 @@ def save_feedback(jsonfile, input_feedback, current_section, section_texts, disp
 
     # print("st.session_state.reviewer_name", st.session_state.reviewer_name)
     # 폴더 생성 및 데이터 저장
+    
     reviewer_folder_id = create_folder(st.session_state.reviewer_name)
     patient_folder_id = create_folder(jsonfile['subject'], reviewer_folder_id)
     upload_to_drive(f"{display_names}.csv", feedback_data, patient_folder_id)
@@ -430,6 +431,37 @@ def generate_aggrid_grouped_options(df, row1, row2):
 
     return aggrid_grouped_options
 
+# Define a mapping of column name variations to standard names
+column_variations = {
+    'emerge': ['emerg', 'emerge'],
+    'no change': ['nchg', 'no change'],
+    'distribution': ['dist', 'distribution', 'distribute'],
+    'severity': ['sev', 'severity', 'seve'],
+    'location': ['loc', 'location'],
+    'morphology': ['mor', 'morp', 'morph'],
+    'improved': ['impr', 'improve', 'improved', 'imp', 'improv', 'improvement'],
+    'reposition': ['repl', 'replace'],
+    'resolve': ['res', 'resolve', 'resolved', 'resolv'],
+    'comparision': ['com', 'comp', 'comparision', 'compare'],
+}
+
+group_by_columns = ['sent', 'sent_idx', 'ent', 'status', 'cat', 'location']
+
+# Determine columns to be aggregated
+aggregate_columns = ['morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
+
+# Function to map variations to standard column names
+def standardize_columns(df, variations_map):
+    for standard_name, variations in variations_map.items():
+        for variation in variations:
+            if variation in df.columns:
+                df.rename(columns={variation: standard_name}, inplace=True)
+    return df
+
+def clean_list(value_list):
+    # Remove empty strings and strings consisting only of commas and/or spaces
+    return [item for item in value_list if item.strip(',') and item.strip()]
+
 def display_data(data):
     sections = {
         "HIST": data.get("History", ""),
@@ -439,18 +471,20 @@ def display_data(data):
     
     annotations = data.get('annotations', [])
 
+    # print("annotations", annotations)
     # annotations가 문자열 형태라면 JSON 객체로 변환
     if isinstance(annotations, str):
         try:
             annotations = json.loads(annotations)
+            
         except json.JSONDecodeError:
             st.error(f"Failed to parse annotations in file: {selected_file}")
             annotations = []
 
     dfs = {}
     aggrid_grouped_options = {}
-    row1 = ['sent', 'entity', 'entity', 'status', 'status', 'relation', 'relation', 'att.appr', 'att.appr', 'att.appr', 'att.level', 'att.level', 'att.tmp', 'att.tmp', 'att.tmp', 'att.tmp', 'att.tmp', 'att.tmp']
-    row2 = ['sent', 'ori', 'norm', 'exist', 'cat', 'loc', 'asso', 'morph', 'dist', 'size', 'num', 'seve', 'emerge', 'no change', 'improve', 'worse', 'reposition', 'resolve']
+    row1 = ['sentence', 'sentence','entity', 'status', 'status', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal']
+    row2 = ['sent', 'sent_idx','ent', 'status', 'cat', 'location', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
 
 
     for sec in sections.keys():
@@ -458,19 +492,89 @@ def display_data(data):
         
         # Initialize empty DataFrame with all columns from row2
         df_sec = pd.DataFrame(columns=row2)
-        
+
         if filtered_annotations:
             df_sec = pd.DataFrame(filtered_annotations)
+            
+            # print("df_sec", df_sec)
 
-            # Additional preprocessing steps can go here.
-            df_sec[['ori', 'norm']] = df_sec['ent'].str.split('|', expand=True)
-            attr_df = df_sec['attr'].apply(pd.Series)
-            df_sec['loc'] = df_sec['rel'].apply(lambda x: x.get('loc') if isinstance(x, dict) else None)
-            df_sec['asso'] = df_sec['rel'].apply(lambda x: x.get('asso') if isinstance(x, dict) else None)
-            df_sec = df_sec.drop(columns=['ent', 'attr', 'rel']).join(attr_df)
+            # 모든 행의 'attr' 값이 빈 사전, None, 또는 빈 문자열인지 확인
+            all_empty = df_sec['attr'].apply(lambda x: x == {} or x is None or x == '').all()
 
-        # Reorder columns based on row2 and fill NaN values with empty string
+            # all_empty가 False인 경우에만 attr 관련 처리 수행
+            if not all_empty:
+                attr_data = []
+                for _, row in df_sec.iterrows():
+                    attr_dict = row.get('attr', {})
+                    
+                    if not attr_dict:
+                        # attr_dict가 비어 있으면, 기존 row의 데이터를 유지
+                        attr_data.append(row.to_dict())
+                        continue  # 다음 행으로 넘어감
+
+                    # attr_dict에 데이터가 있는 경우 처리
+                    for key, compound_val in attr_dict.items():
+                        # 콤마로 구분된 다중 값을 분리
+                        compound_values_processed = False
+
+                        if isinstance(compound_val, list):
+                            compound_val = ', '.join(compound_val)
+
+                        # print("compound_val", compound_val)
+                        
+                        for val in compound_val.split(', '):
+                            # '|'로 키와 값을 분리
+                            parts = val.split('|')
+                            if len(parts) == 2:
+                                # 분리된 값이 정확히 두 부분일 때, 새로운 키와 값으로 분리하여 사용
+                                new_key, new_val = parts
+                                attr_data.append({**row.to_dict(), new_key: new_val})
+                                compound_values_processed = True
+                            else:
+                                # '|'가 없거나 두 개 이상 포함되어 있는 경우, 에러 처리나 다른 로직 적용
+                                print(f"Unexpected format in 'attr' value: {val}")
+                        
+                        if not compound_values_processed:
+                            # 콤마로 구분된 값이 처리되지 않았다면, 즉 '|'로 분리할 수 없는 경우
+                            # 기존 row의 데이터를 그대로 유지
+                            attr_data.append(row.to_dict())
+                df_sec = pd.DataFrame(attr_data)
+            
+            # print("11 df_sec", df_sec.columns)
+            df_sec = df_sec.drop(columns=['attr'], errors='ignore')
+            
+
+            # Standardize column names based on variations
+            df_sec = standardize_columns(df_sec, column_variations)
+            
+        extra_columns = set(df_sec.columns) - set(row2)
+        if extra_columns and not extra_columns.issubset({'sent_idx', 'sec'}):
+            raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
+
         df_sec = df_sec.reindex(columns=row2).fillna('')
+        # print("22 df_sec", df_sec['sent_idx'])
+        
+        #######################################################################################################################################################################################
+        # Ensure each aggregate column is a list (this simplifies combining them later)
+        for column in aggregate_columns:
+            df_sec[column] = df_sec[column].apply(lambda x: [x] if pd.notnull(x) else [])
+
+        # Group by the specified columns and aggregate the rest
+        df_sec = df_sec.groupby(group_by_columns, as_index=False).agg({col: 'sum' for col in aggregate_columns})
+
+        # Optionally, remove duplicates from each aggregated list
+        for column in aggregate_columns:
+            df_sec[column] = df_sec[column].apply(clean_list)
+            # df_sec[column] = df_sec[column].apply(lambda x: list(set(x)))
+
+        # Your aggregated_df now contains combined information for 'morphology' to 'resolve'
+        # based on unique combinations of 'sent', 'ent', 'status', 'cat', and 'location'
+        df_sec = df_sec.sort_values(by='sent_idx', ascending=True)
+
+        # print("aggregated_df", df_sec['size'])
+        # print("33 df_sec", df_sec.columns)
+        df_sec = df_sec.drop(columns=['sent_idx'], errors='ignore')
+        ########################################################################################################################################################################################
         
         dfs[sec] = df_sec
         aggrid_grouped_options[sec] = generate_aggrid_grouped_options(df_sec, row1, row2)
@@ -650,7 +754,7 @@ if not st.session_state.reviewer_name:
 
             if st.session_state.show_attr:
                 st.markdown("""
-            1. Appearance (appr), which can be categorized as
+            1. Appearance (appearance), which can be categorized as
                 - Morphology (mor): Physical form, structure, shape, pattern or texture of an object or substance. (e.g., 'irregular', 'rounded', 'dense', 'ground-glass',  'patchy', 'linear', 'plate-like', 'nodular')
                 - Distribution (dist): Arrangement, spread of objects or elements within a particular area or space (e.g., 'focal', 'multifocal/multi-focal', 'scattered', 'hazy', 'widespread')
                 - Size (size): Physical dimensions or overall magnitude of an entity ('small', 'large', 'massive', 'subtle', 'minor', 'xx cm')
@@ -662,7 +766,7 @@ if not st.session_state.reviewer_name:
             3. Temporal (tmp) differential diagnosis, which can be categorized as
                 - Emergence (emerg): Refers to the chronological progression or appearance of a medical finding or device. Unlike terms that highlight the comparative change in condition, this concept emphasizes the chronological state, either within a single study or in relation to a sequential study. (e.g., new, old, acute, subacute, chronic, remote, recurrent).
                 - No Change (nchg): Refers to the consistent state or condition that remains unaltered from a prior study. (e.g., no changed, unchanged, similar, persistent)
-                - Improvement (improved): Refers to a positive change or stabilization in a patient's clinical state when compared to a prior assessment. (e.g., improved, decreased, stable)
+                - Improvement (impr): Refers to a positive change or stabilization in a patient's clinical state when compared to a prior assessment. (e.g., improved, decreased, stable)
                 - Worsened (worsened): Refers to the negative change in a patient's clinical state in comparison to a prior assessment. (e.g., worsened, increased)
                 - Replacement of DEV (replace): Refers to the altered position of a medical device inside a patient compared to prior studies. (e.g., displaced, repositioned).
                 - Resolve (resolve): Refers to the complete disappearance of a specific medical finding or device from imaging. (e.g., resolved, cleared).
@@ -690,7 +794,21 @@ def download_folder_by_name(service, folder_name, local_path):
         download_folder(service, folder_id, local_path)
     else:
         print("Failed to find folder or download content.")
-                                        
+
+def list_to_string(value):
+    # If the input value is None, return None immediately
+    if value is None:
+        return ''
+
+    # If the input value is not a list, treat it as a single-element list
+    if not isinstance(value, list):
+        value = [value]
+
+    # Clean the list: Remove duplicates, empty strings, and strip whitespace
+    cleaned_list = list(set(item.strip() for item in value if item and item.strip()))
+
+    # Convert to string and return None if the cleaned list is empty
+    return ', '.join(cleaned_list) if cleaned_list else ''                         
             
 def download_folder(service, folder_id, local_path):
     def download_file(file_id, file_name, local_file_path):
@@ -901,10 +1019,14 @@ if st.session_state.reviewer_name:
             )
             
             updated_df = pd.DataFrame(response['data'])
+            for column in aggregate_columns:
+                updated_df[column] = updated_df[column].apply(list_to_string)
             st.session_state.my_dfs[current_section] = updated_df
-            
-            # 사용 예시: Google Drive에서 파일 목록을 가져와 출력
-            # download_folder_by_name(drive_service, 'jh', '/mnt/c/Users/gkrdl/Downloads/streamlit/feedback_result')
+
+            # print("jsonfile", jsonfile)
+            # print("st.session_state.my_dfs[current_section]", st.session_state.my_dfs[current_section])
+
+            # download_folder_by_name(drive_service, 'jh', '/Users/super_moon/Desktop/streamlit/feedback_result')
 
             # # 'Submit Feedback' 버튼
             if st.button('Submit Feedback', key=f"unique_key_for_submit_button_{current_section}"):
@@ -922,4 +1044,4 @@ if st.session_state.reviewer_name:
                 st.write("No feedback found for this section.")
                 
                 
-
+                

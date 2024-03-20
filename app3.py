@@ -56,7 +56,7 @@ grid_width = "100%"
 json_folder_path = './test2/'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
 st.set_page_config(layout="wide")
-
+columns_to_drop = ['cat','subject_id', 'study_id', 'sequence', 'section', 'report']
 
 # Google Drive에 파일 업로드
 def upload_to_drive(filename, filedata, folder_id=None):
@@ -228,7 +228,6 @@ def save_feedback(jsonfile, input_feedback, current_section, section_texts, disp
     reviewer_folder_id = create_folder(st.session_state.reviewer_name)
     patient_folder_id = create_folder(jsonfile['subject'], reviewer_folder_id)
     upload_to_drive(f"{display_names}.csv", feedback_data, patient_folder_id)
-
     # return patient_folder_id, feedback_data
 
 def del_files(service, folder_id, indent=0):
@@ -548,7 +547,7 @@ def display_data(data):
             df_sec = standardize_columns(df_sec, column_variations)
             
         extra_columns = set(df_sec.columns) - set(row2)
-        if extra_columns and not extra_columns.issubset({'sent_idx', 'sec'}):
+        if extra_columns and not extra_columns.issubset({'sent_idx', 'sec', 'cat'}):
             raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
 
         df_sec = df_sec.reindex(columns=row2).fillna('')
@@ -573,7 +572,7 @@ def display_data(data):
 
         # print("aggregated_df", df_sec['size'])
         # print("33 df_sec", df_sec.columns)
-        df_sec = df_sec.drop(columns=['sent_idx'], errors='ignore')
+        df_sec = df_sec.drop(columns=['sent_idx','cat'], errors='ignore')
         ########################################################################################################################################################################################
         
         dfs[sec] = df_sec
@@ -805,8 +804,15 @@ def list_to_string(value):
         value = [value]
 
     # Clean the list: Remove duplicates, empty strings, and strip whitespace
-    cleaned_list = list(set(item.strip() for item in value if item and item.strip()))
-
+    cleaned_list = list(set(
+        str(item).strip() 
+        for item in value 
+        if item is not None 
+        and str(item).strip() 
+        and str(item).strip().lower() != 'nan' 
+        and str(item).strip().lower() != 'none'  # Exclude 'None'
+    ))
+    
     # Convert to string and return None if the cleaned list is empty
     return ', '.join(cleaned_list) if cleaned_list else ''                         
             
@@ -857,6 +863,8 @@ def download_folder(service, folder_id, local_path):
     top_local_path = os.path.join(local_path, folder_name)
     list_files_in_folder(folder_id, top_local_path)
 
+updated_df = None
+
 # If reviewer_name is set, display the rest of the app
 if st.session_state.reviewer_name:    
     st.title(f'GPT4 Results - Reviewer: {st.session_state.reviewer_name}')
@@ -886,10 +894,8 @@ if st.session_state.reviewer_name:
     display_names = [name[1] for name in sequence_filenames]
 
     selected_display_name = st.sidebar.selectbox('Select a JSON file:', display_names)
-
     selected_file = next(f for f in file_structure[selected_patient] if os.path.basename(f).replace('.json', '') in selected_display_name)
 
-    # Initialize session_state if it doesn't exist
     if 'last_selected_file' not in st.session_state:
         st.session_state.last_selected_file = None
 
@@ -912,13 +918,9 @@ if st.session_state.reviewer_name:
         st.session_state.checkbox_states = {}
         st.session_state.row_count_state = {}
         st.session_state.my_dfs = {}
-
     else:
         # 이전에 저장한 피드백이 있다면 불러옴
         previous_feedback = {}#load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
-        # print("previous_feedback", previous_feedback)
-
-    # Update last_selected_file in session_state
     st.session_state.last_selected_file = selected_file
 
     # Load and display selected JSON data
@@ -928,14 +930,10 @@ if st.session_state.reviewer_name:
     
     # Get statistics    
     present_sections, sent_stats, cat_stats, norm_ent_stats, missing_sents = get_statistics(jsonfile, dfs)
-
-    # 파일 통계 섹션 시작
-    # 전체 개수를 계산 (선택 사항)
     total_missing = sum(len(value) for value in missing_sents.values())
 
     with st.expander(f"**Show File Statistics: {total_missing} Missing Sents**"):
         #1. 'CAT'의 value 통계 출력
-        st.write("CAT stats:")
         section_to_cat_and_norm_ent = defaultdict(list)
         
         for (section, cat_dict), (_, norm_ent_dict) in zip(cat_stats.items(), norm_ent_stats.items()):
@@ -966,35 +964,41 @@ if st.session_state.reviewer_name:
         if isinstance(previous_feedback, pd.DataFrame):    
             filtered_df = previous_feedback[previous_feedback['section'] == current_section]
 
-            if not filtered_df.empty:
-                st.write(":sunglasses: Previous Results:")
-                st.write(filtered_df)
-            else:
+            if filtered_df.empty:
                 if len(content) != 0 and content != '':
-                    error_message = f"No previous feedback. Please start feedback for this section."
+                    error_message = f"Did you forget to annotate this section?"
                     st.error(error_message, icon="🚨")
-                    
         ################################################################################################
         with st.expander(f"**{current_section} DataFrame**"):
-            if 'my_dfs' not in st.session_state:
-                st.session_state.my_dfs = {}
             
-            if current_section not in st.session_state.my_dfs:
-                initial_df = current_df.copy()
-                initial_df.columns = initial_df.columns.astype(str)
-                st.session_state.my_dfs[current_section] = initial_df
+            # # Check for previous feedback for the current section and use it if available
+            initial_df = current_df.copy()            
+            initial_df.drop(columns=[col for col in columns_to_drop if col in initial_df.columns], inplace=True)
+            initial_df.columns = initial_df.columns.astype(str)            
+            
+            if isinstance(previous_feedback, pd.DataFrame):
+                if current_section not in st.session_state.my_dfs:
+                    st.write(":male-doctor: Previous Review:")                        
+                    load_df = filtered_df.copy()
+                    load_df.columns = load_df.columns.astype(str)
+                    st.session_state.my_dfs[current_section] = load_df                    
+            else:
+                if current_section not in st.session_state.my_dfs:
+                    st.session_state.my_dfs[current_section] = initial_df
 
-            # Add Row 버튼
-            if st.button('Add Row', key=f'add_row_button_{current_section}'):
-                columns = st.session_state.my_dfs[current_section].columns.tolist()
-                new_row = pd.DataFrame([pd.Series({col: '' for col in columns})])
-                st.session_state.my_dfs[current_section] = pd.concat([st.session_state.my_dfs[current_section], new_row], ignore_index=True)
+            col1, col2, _,_,_,_,_,_ = st.columns(8)
 
-            # Remove Last Row 버튼
-            if st.button('Remove Last Row', key=f'remove_last_row_button_{current_section}'):
-                if len(st.session_state.my_dfs[current_section]) > 0:  # Check if DataFrame is not empty
-                    st.session_state.my_dfs[current_section].drop(st.session_state.my_dfs[current_section].index[-1], inplace=True)
-                    st.session_state.my_dfs[current_section].reset_index(drop=True, inplace=True)
+            with col1:
+                if st.button('Add Row', key=f'add_row_button_{current_section}'):
+                    columns = st.session_state.my_dfs[current_section].columns.tolist()
+                    new_row = pd.DataFrame([pd.Series({col: '' for col in columns})])
+                    st.session_state.my_dfs[current_section] = pd.concat([st.session_state.my_dfs[current_section], new_row], ignore_index=True)
+
+            with col2:
+                if st.button('Remove Last Row', key=f'remove_last_row_button_{current_section}'):
+                    if len(st.session_state.my_dfs[current_section]) > 0:  # 데이터프레임이 비어 있지 않은 경우
+                        st.session_state.my_dfs[current_section].drop(st.session_state.my_dfs[current_section].index[-1], inplace=True)
+                        st.session_state.my_dfs[current_section].reset_index(drop=True, inplace=True)
 
             gb = GridOptionsBuilder.from_dataframe(st.session_state.my_dfs[current_section])
             gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=True)
@@ -1018,14 +1022,14 @@ if st.session_state.reviewer_name:
                 key=ag_grid_key  # updated key
             )
             
+            st.write(":robot_face: GPT4 Results:")
+            st.write(initial_df.drop(['sent'], axis=1))
             updated_df = pd.DataFrame(response['data'])
-            for column in aggregate_columns:
-                # print("updated_df[column]", updated_df[column])
+            updated_df = updated_df.drop(columns=[col for col in columns_to_drop if col in updated_df.columns])            
+
+            for column in updated_df.columns.tolist():
                 updated_df[column] = updated_df[column].apply(list_to_string)
             st.session_state.my_dfs[current_section] = updated_df
-
-            # print("jsonfile", jsonfile)
-            # print("st.session_state.my_dfs[current_section]", st.session_state.my_dfs[current_section])
 
             # download_folder_by_name(drive_service, 'jh', '/Users/super_moon/Desktop/streamlit/feedback_result')
 
@@ -1038,9 +1042,7 @@ if st.session_state.reviewer_name:
                 filtered_df = now_feedback[now_feedback['section'] == current_section]
 
                 st.write(":point_right: Updated Results:")
-                st.write(filtered_df)
-            
-
+                st.write(filtered_df.drop(['sent', 'subject_id', 'study_id', 'sequence', 'section', 'report'], axis=1))
             else:
                 st.write("No feedback found for this section.")
                 
