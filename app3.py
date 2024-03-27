@@ -52,11 +52,10 @@ editable = True
 # grid_height = "100%"
 grid_width = "100%"
 
-
-json_folder_path = './test2/'
+json_folder_path = './test3/'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
 st.set_page_config(layout="wide")
-columns_to_drop = ['cat','subject_id', 'study_id', 'sequence', 'section', 'report']
+columns_to_drop = ['subject_id', 'study_id', 'sequence', 'section', 'report']
 
 # Google Drive에 파일 업로드
 def upload_to_drive(filename, filedata, folder_id=None):
@@ -385,21 +384,7 @@ def get_statistics(data, dfs):
                 # print("section_sents", section_sents)
                 missing_sents[sec] = section_sents
                 
-        if 'cat' in df.columns:
-            cat_counts = df['cat'].value_counts().to_dict()
-            cat_stats[sec] = cat_counts
-            
-            # if 'ROF-PATH' in cat_counts.keys():
-            #     if 'norm_ent' in df.columns:
-            #         norm_ent_counts = df[df['cat'] == 'ROF-PATH']['norm_ent'].value_counts().to_dict()
-            if 'cat' in df.columns and 'norm_ent' in df.columns:
-                for _, row in df.iterrows():
-                    cat = row['cat']
-                    norm_ent = row['norm_ent']
-                    if not isinstance(norm_ent_stats[sec][cat][norm_ent], int):  # Check if the existing value is an int
-                        norm_ent_stats[sec][cat][norm_ent] = 0  # If not, initialize it to 0
-                    norm_ent_stats[sec][cat][norm_ent] += 1  # Increment
-    
+        
     return present_sections, sent_stats, cat_stats, dict(norm_ent_stats), missing_sents  # Assuming you want to return these
 
 # Function to create aggrid_grouped_options with multi-level headers
@@ -432,22 +417,35 @@ def generate_aggrid_grouped_options(df, row1, row2):
 
 # Define a mapping of column name variations to standard names
 column_variations = {
-    'emerge': ['emerg', 'emerge'],
+    'emerge': ['emerg', 'emerge', 'emrg'],
     'no change': ['nchg', 'no change'],
     'distribution': ['dist', 'distribution', 'distribute'],
     'severity': ['sev', 'severity', 'seve'],
     'location': ['loc', 'location'],
+    'evidence': ['evd', 'evidence'],
     'morphology': ['mor', 'morp', 'morph'],
     'improved': ['impr', 'improve', 'improved', 'imp', 'improv', 'improvement'],
     'reposition': ['repl', 'replace'],
     'resolve': ['res', 'resolve', 'resolved', 'resolv'],
     'comparision': ['com', 'comp', 'comparision', 'compare'],
+    'past hx': ['hx', 'past hx', 'past history'],
+    'other source': ['other source', 'other', 'source'],
+    'technical limitation': ['tech', 'technical limitation', 'technical', 'limitation'],
 }
 
-group_by_columns = ['sent', 'sent_idx', 'ent', 'status', 'cat', 'location']
+sub_category_mapping = {
+    'appr': ['morphology', 'distribution', 'size'],
+    'level': ['num', 'severity', 'comparision'],
+    'tmp': ['emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve'],
+}
+
+
+group_by_columns = ['idx', 'sent', 'ent', 'sent_idx', 'status']
 
 # Determine columns to be aggregated
-aggregate_columns = ['morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
+aggregate_columns = ['location', 'evidence', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve', 'past hx', 'other source', 'technical limitation', 'misc']
+
+reverse_variations = {variation: standard_name for standard_name, variations in column_variations.items() for variation in variations}
 
 # Function to map variations to standard column names
 def standardize_columns(df, variations_map):
@@ -457,9 +455,60 @@ def standardize_columns(df, variations_map):
                 df.rename(columns={variation: standard_name}, inplace=True)
     return df
 
+
+def process_dict_values(row, dict_name, sentences):
+    processed_rows = []
+    data_dict = row.get(dict_name, {})
+
+    # 문장이 존재하는 경우, 해당 문장을 가져옴
+    sent_idx = row['sent_idx']  # sent_idx 값 직접 가져오기
+    sentence = sentences[sent_idx - 1] if sent_idx - 1 < len(sentences) else ''
+    row_dict = row.to_dict()  # Series를 딕셔너리로 변환
+    row_dict['sent'] = sentence  # 새로운 'sent' 키에 문장 할당
+
+    for key, compound_val in data_dict.items():
+        new_row = row_dict.copy()  # 기존 row_dict의 복사본을 사용하여 수정 시작
+        
+        standard_key = reverse_variations.get(key, key)
+        
+        if key in sub_category_mapping:
+            for sub_key in sub_category_mapping[key]:
+                standard_sub_key = reverse_variations.get(sub_key, sub_key)
+                new_row[standard_sub_key.lower()] = ''
+        else:
+            new_row[standard_key.lower()] = ''
+        
+        if compound_val:  # 값이 없는 경우, key만 처리하고 value는 빈 문자열로 처리
+            # 값이 리스트인 경우, 콤마로 구분된 문자열로 변환
+            if isinstance(compound_val, list):
+                compound_val = ', '.join(compound_val)
+
+            # 콤마로 구분된 값을 처리
+            for val in compound_val.split(', '):
+                parts = val.split('|')
+                if len(parts) == 2:
+                    # '|'로 구분된 값이 정확히 두 부분일 때 새로운 키와 값으로 분리
+                    new_key, new_val = parts                        
+
+                    if standard_key.lower() == 'evidence':
+                        new_row[standard_key.lower()] = f'{new_key}, {new_val}'
+                    
+                    else:
+                        standard_new_key = reverse_variations.get(new_key, new_key)
+                        new_row[standard_new_key.lower()] = new_val.lower()
+                else:
+                    # '|'가 없는 경우, 키에 해당하는 전체 값을 그대로 사용
+                    new_row[standard_key.lower()] = val.lower()
+
+        processed_rows.append(new_row)
+
+    return pd.DataFrame(processed_rows)
+
+
 def clean_list(value_list):
     # Remove empty strings and strings consisting only of commas and/or spaces
     return [item for item in value_list if item.strip(',') and item.strip()]
+
 
 def display_data(data):
     sections = {
@@ -482,72 +531,59 @@ def display_data(data):
 
     dfs = {}
     aggrid_grouped_options = {}
-    row1 = ['sentence', 'sentence','entity', 'status', 'status', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal']
-    row2 = ['sent', 'sent_idx','ent', 'status', 'cat', 'location', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
+    row1 = ['annot', 'sentence', 'sentence','entity', 'status', 'relation', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'other information', 'other information', 'other information', 'other information']
+    row2 = ['idx', 'sent', 'sent_idx','ent', 'status', 'location', 'evidence', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve', 'past hx', 'other source', 'technical limitation', 'misc']
 
 
     for sec in sections.keys():
         filtered_annotations = [item for item in annotations if item['sec'] == sec]
         
+        # 섹션을 문장으로 분리
+        sentences = sent_tokenize(sections[sec])
+        
+        print("sentences", sentences)
+
+        # # 각 문장에 대해 sent_idx를 할당하고, 결과를 저장합니다.
+        # sentences_with_idx = [{"sent_idx": idx, "sentence": sent} for idx, sent in enumerate(sentences, start=1)]
+        # print("sentences_with_idx", sentences_with_idx)
+
+        # # 결과 출력
+        # for item in sentences_with_idx:
+        #     print(f'sent_idx: {item["sent_idx"]}, sentence: "{item["sentence"]}"')
+
+
         # Initialize empty DataFrame with all columns from row2
         df_sec = pd.DataFrame(columns=row2)
 
         if filtered_annotations:
             df_sec = pd.DataFrame(filtered_annotations)
-            
-            # print("df_sec", df_sec)
 
-            # 모든 행의 'attr' 값이 빈 사전, None, 또는 빈 문자열인지 확인
-            all_empty = df_sec['attr'].apply(lambda x: x == {} or x is None or x == '').all()
-
-            # all_empty가 False인 경우에만 attr 관련 처리 수행
-            if not all_empty:
-                attr_data = []
-                for _, row in df_sec.iterrows():
-                    attr_dict = row.get('attr', {})
+            all_processed_rows = []
+            for _, row in df_sec.iterrows():
+                # 'attr', 'rel', 'OTH' 각각 처리
+                for dict_name in ['attr', 'rel', 'OTH']:
+                    processed_df = process_dict_values(row, dict_name, sentences)
+                    all_processed_rows.append(processed_df)
                     
-                    if not attr_dict:
-                        # attr_dict가 비어 있으면, 기존 row의 데이터를 유지
-                        attr_data.append(row.to_dict())
-                        continue  # 다음 행으로 넘어감
-
-                    # attr_dict에 데이터가 있는 경우 처리
-                    for key, compound_val in attr_dict.items():
-                        # 콤마로 구분된 다중 값을 분리
-                        compound_values_processed = False
-
-                        if isinstance(compound_val, list):
-                            compound_val = ', '.join(compound_val)
-
-                        # print("compound_val", compound_val)
-                        
-                        for val in compound_val.split(', '):
-                            # '|'로 키와 값을 분리
-                            parts = val.split('|')
-                            if len(parts) == 2:
-                                # 분리된 값이 정확히 두 부분일 때, 새로운 키와 값으로 분리하여 사용
-                                new_key, new_val = parts
-                                attr_data.append({**row.to_dict(), new_key: new_val})
-                                compound_values_processed = True
-                            else:
-                                # '|'가 없거나 두 개 이상 포함되어 있는 경우, 에러 처리나 다른 로직 적용
-                                print(f"Unexpected format in 'attr' value: {val}")
-                        
-                        if not compound_values_processed:
-                            # 콤마로 구분된 값이 처리되지 않았다면, 즉 '|'로 분리할 수 없는 경우
-                            # 기존 row의 데이터를 그대로 유지
-                            attr_data.append(row.to_dict())
-                df_sec = pd.DataFrame(attr_data)
+            if all_processed_rows:
+                df_sec = pd.concat(all_processed_rows, ignore_index=True)
+                
+                # print("new_df.columns", df_sec.columns)
+                # print("new_df", df_sec)
+                
+                # df_sec = pd.concat([df_sec, new_df], ignore_index=True).drop_duplicates()
             
-            # print("11 df_sec", df_sec.columns)
-            df_sec = df_sec.drop(columns=['attr'], errors='ignore')
-            
+            df_sec.drop(columns=['attr', 'rel', 'OTH', 'appr', 'tmp', 'level'], errors='ignore', inplace=True)
+                
+            print("22 df_sec", df_sec.columns)
+            print("df_sec['sent']", df_sec['sent'])
 
             # Standardize column names based on variations
             df_sec = standardize_columns(df_sec, column_variations)
-            
+
+    
         extra_columns = set(df_sec.columns) - set(row2)
-        if extra_columns and not extra_columns.issubset({'sent_idx', 'sec', 'cat'}):
+        if extra_columns and not extra_columns.issubset({'sent_idx', 'sec'}):
             raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
 
         df_sec = df_sec.reindex(columns=row2).fillna('')
@@ -567,12 +603,11 @@ def display_data(data):
             # df_sec[column] = df_sec[column].apply(lambda x: list(set(x)))
 
         # Your aggregated_df now contains combined information for 'morphology' to 'resolve'
-        # based on unique combinations of 'sent', 'ent', 'status', 'cat', and 'location'
-        df_sec = df_sec.sort_values(by='sent_idx', ascending=True)
+        # based on unique combinations of 'sent', 'ent', 'status',  and 'location'
+        df_sec = df_sec.sort_values(by='idx', ascending=True)
 
-        # print("aggregated_df", df_sec['size'])
         # print("33 df_sec", df_sec.columns)
-        df_sec = df_sec.drop(columns=['sent_idx','cat'], errors='ignore')
+        # df_sec = df_sec.drop(columns=['sent_idx'], errors='ignore')
         ########################################################################################################################################################################################
         
         dfs[sec] = df_sec
@@ -633,7 +668,7 @@ if not st.session_state.reviewer_name:
             - **GPT-4 결과**: Dataframe 형태와 추출에 사용된 문장, 그리고 해당 결과가 간략히 표시됩니다.
             - **저장**: 섹션별 리뷰를 수행한 후, 제출 버튼을 눌러야 해당 섹션의 리뷰 내용이 저장됩니다.
             - **피드백 형식**: 피드백을 남길 시 반드시 dictionary 형태로 'key-value' 쌍의 형식을 따라주세요.  
-            *ex) exist: DP|worsening*
+            *ex) status: DP|worsening*
             - **피드백 시작**: 'Review {section}'을 클릭하여 피드백을 시작하세요.
 
             #### 피드백 종류:
@@ -675,7 +710,7 @@ if not st.session_state.reviewer_name:
             - **GPT-4 Results**: Results are briefly displayed in a dataframe, along with the sentences used for extraction.
             - **Save**: After reviewing each section, click the 'Submit' button to save the review for that section.
             - **Feedback Format**: Please strictly follow a 'key-value' pair format in a dictionary when leaving feedback.  
-            *e.g., exist: DP|worsening*
+            *e.g., status: DP|worsening*
             - **Start Feedback**: Click 'Review {section}' to begin the feedback process.
 
             #### Types of Feedback:
@@ -1042,7 +1077,9 @@ if st.session_state.reviewer_name:
                 filtered_df = now_feedback[now_feedback['section'] == current_section]
 
                 st.write(":point_right: Updated Results:")
-                st.write(filtered_df.drop(['sent', 'subject_id', 'study_id', 'sequence', 'section', 'report'], axis=1))
+                # st.write(filtered_df.drop(['sent', 'subject_id', 'study_id', 'sequence', 'section', 'report'], axis=1))
+                st.write(filtered_df.drop(['subject_id', 'study_id', 'sequence', 'section', 'report'], axis=1))
+                
             else:
                 st.write("No feedback found for this section.")
                 

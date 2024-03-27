@@ -10,6 +10,7 @@ from nltk.tokenize import sent_tokenize
 import re
 import io
 import tempfile
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, JsCode
 
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
@@ -40,36 +41,46 @@ drive_service = build('drive', 'v3', credentials=credentials)
 drive_info = drive_service.about().get(fields='storageQuota').execute()
 
 # # 용량 정보 출력
-# total_space = int(drive_info['storageQuota']['limit'])
-# used_space = int(drive_info['storageQuota']['usage'])
+total_space = int(drive_info['storageQuota']['limit'])
+used_space = int(drive_info['storageQuota']['usage'])
 
-# print(f"Total Space: {total_space / 1e9} GB")
-# print(f"Used Space: {used_space / 1e9} GB")
-# print(f"Free Space: {(total_space - used_space) / 1e9} GB")
+print(f"Total Space: {total_space / 1e9} GB")
+print(f"Used Space: {used_space / 1e9} GB")
+print(f"Free Space: {(total_space - used_space) / 1e9} GB")
+
+editable = True
+# grid_height = "100%"
+grid_width = "100%"
 
 
-json_folder_path = './test/'
+json_folder_path = './test2/'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
 st.set_page_config(layout="wide")
 
 
 # Google Drive에 파일 업로드
-# upload_to_drive(f"{display_names}.json", temp_name, 'application/json', patient_folder_id)
-def upload_to_drive(filename, filedata, mimetype, folder_id=None):
+def upload_to_drive(filename, filedata, folder_id=None):
     file_metadata = {'name': filename}
     
     if folder_id:
         file_metadata['parents'] = [folder_id]
         
-    media = MediaFileUpload(filedata, mimetype=mimetype)
+    # Convert DataFrame to CSV string and then to BytesIO object
+    csv_buffer = io.BytesIO()
+    filedata.to_csv(csv_buffer, index=False)
+    csv_buffer.seek(0)
+    
+    media = MediaIoBaseUpload(csv_buffer, mimetype='text/csv', resumable=True)
         
     request = drive_service.files().create(
         body=file_metadata,
         media_body=media,
-        fields='id'
+        fields='id, name, parents'
     )
     file = request.execute()
-    print(f"Uploaded file with ID {file.get('id')}")
+
+    # 파일의 ID와 부모 폴더 정보를 출력합니다.
+    print(f"Uploaded file with name {file.get('name')}, ID {file.get('id')} to parent(s) {file.get('parents')}")
 
 
 def create_folder(folder_name, parent_folder_id=None):
@@ -83,7 +94,11 @@ def create_folder(folder_name, parent_folder_id=None):
         fields="files(id, name)"
     ).execute()
 
+    # print("results", results)
+    
     items = results.get('files', [])
+    
+    # print("items", items)
     
     # 폴더가 이미 존재하는 경우
     if len(items) > 0:
@@ -94,10 +109,15 @@ def create_folder(folder_name, parent_folder_id=None):
         'name': folder_name,
         'mimeType': 'application/vnd.google-apps.folder'
     }
+    # print("folder_name", folder_name)
+    
     if parent_folder_id:
         folder_metadata['parents'] = [parent_folder_id]
         
     folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+    
+    # print("folder['id']", folder['id'])
+    
     return folder['id']
 
 
@@ -162,7 +182,6 @@ def parse_input_to_dict(input_data):
     return parsed_dict
 
 
-
 def adjust_key(k, reference_dict):
     # Attempt to find a matching key in reference_dict that starts with 'rel.'
     matching_key = next((key for key in reference_dict.keys() if key.endswith('.' + k)), None)
@@ -173,139 +192,44 @@ def adjust_key(k, reference_dict):
     return [k]
 
 
+def save_feedback(jsonfile, input_feedback, current_section, section_texts, display_names, feedback_data=None):
+    # 기존 데이터 불러오기
+    top_folder_id = find_top_folder(drive_service)
+    existing_feedback = load_feedback(jsonfile['subject'], display_names, drive_service, top_folder_id)
 
-def save_feedback(patient_id, display_names, feedback_data, feedback_columns=['include', 'delete', 'modify', 'opinion'], valid_keys = ['ent', 'sec', 'exist', 'cat', 'sent', 'sent_idx', 'rel', 'loc', 'asso', 'attr', 'appr', 'level', 'tmp', 'opinion', 'norm_ent', 'ori_ent']):
-   
-    original_name = display_names.split('_')[-1]
-    original_json = load_json(f"./test/{patient_id}/{original_name}.json")
-    new_json = copy.deepcopy(original_json)    
-    annotations_list = json.loads(original_json['annotations'])
-    new_annotate_list = []
+    # 기존 데이터에 새로운 피드백 추가
+    if existing_feedback is not None:
+        # 현재 섹션의 기존 피드백 찾기
+        existing_section_feedback = existing_feedback[existing_feedback['section'] == current_section]
+
+        # 기존 피드백이 있는 경우, 해당 피드백 삭제
+        if not existing_section_feedback.empty:
+            existing_feedback = existing_feedback[existing_feedback['section'] != current_section]
+
+        input_feedback['subject_id'] = jsonfile['subject']
+        input_feedback['study_id'] = jsonfile['study']
+        input_feedback['sequence'] = jsonfile['sequence']
+        input_feedback['section'] = current_section    
+        input_feedback['report'] = section_texts
+
+        # 새로운 피드백 추가
+        feedback_data = pd.concat([existing_feedback, input_feedback], ignore_index=True)
+    else:
+        feedback_data = input_feedback.copy()
+        feedback_data['subject_id'] = jsonfile['subject']
+        feedback_data['study_id'] = jsonfile['study']
+        feedback_data['sequence'] = jsonfile['sequence']
+        feedback_data['section'] = current_section    
+        feedback_data['report'] = section_texts
+
+    # print("st.session_state.reviewer_name", st.session_state.reviewer_name)
+    # 폴더 생성 및 데이터 저장
     
-    for sec, sec_data in feedback_data.items():
-        annot = [item for item in annotations_list if item['sec'] == sec]
-        empty_indices = [index for index, value in sec_data.items() if not value]
-        if empty_indices:
-            indices_str = ', '.join(map(str, empty_indices))
-            error_message = f"Please fill in {sec} section data for the following indices: {indices_str}."
-            st.error(error_message, icon="🚨")
-            
-        for idx_str, feedback in sec_data.items():           
-            if isinstance(idx_str, str):
-                feedback = parse_input_to_dict(feedback)
-                feedback['sec'] = sec
-                
-                if not any(key in valid_keys for key in feedback.keys()):
-                    st.error(f"Invalid key. Please use a key from the list: {valid_keys}", icon="🚨")
-                    break
-                idx = int(idx_str)
-                modified_annotation = feedback
-                
-            else:
-                idx = int(idx_str)
-                modified_annotation = annot[idx]
-            
-            if feedback != 'all_correct' and not isinstance(idx_str, str):
-                # Single-key items (e.g., 'cat', 'norm_ent')
-                single_keys = set(value.split(':')[0].strip(" '") for value in feedback.values() if len(value.split(':')) == 2)
+    reviewer_folder_id = create_folder(st.session_state.reviewer_name)
+    patient_folder_id = create_folder(jsonfile['subject'], reviewer_folder_id)
+    upload_to_drive(f"{display_names}.csv", feedback_data, patient_folder_id)
 
-                # Triple-key items (e.g., 'tmp: nchg: stable')
-                triple_keys = set(value.split(':')[1].strip(" '") for value in feedback.values() if len(value.split(':')) == 3)
-
-                for key, value in feedback.items():
-                    prefix = key.split('_')[0]
-                                        
-                    if prefix in feedback_columns:
-                        if prefix == 'opinion':
-                            modified_annotation['opinion'] = value
-                        else:
-                            key_value_pair = [item.strip() for item in value.split(": ")]                            
-                            new_dict1, new_dict2 = extract_key_values(modified_annotation)
-                            dic1_key = find_and_map_values_by_index(key_value_pair[0], new_dict1, new_dict2)
-                            
-                            ### 4 key_value_pair ["attr'", "{'appr'", "'mor|nodular', 'tmp'", "'improved|improved'}"]
-                            if len(key_value_pair) == 1:
-                                print(f"Invalid feedback. Expected key-value pair for prefix {prefix}, got {key_value_pair}")
-                                st.error(f"Invalid feedback. Expected key-value pair for prefix {prefix}, got {key_value_pair}", icon="🚨")
-                            
-                            if len(key_value_pair) == 2:
-                                
-                                k, v = key_value_pair
-                                k = remove_quotes_with_re(k)
-                                v = remove_quotes_with_re(v)
-                                                                
-                                k_list = adjust_key(k, new_dict1)
-                                
-                                if prefix == 'include':
-                                    if len(k_list) == 2:
-                                        if k_list[0] in modified_annotation:
-                                            if isinstance(modified_annotation[k_list[0]], dict):                                             
-                                                modified_annotation[k_list[0]][k_list[1]] = [modified_annotation[k_list[0]][k_list[1]], v]
-                                            else:
-                                                modified_annotation[k_list[0]][k_list[1]] = [modified_annotation[k_list[0]][k_list[1]], v]
-                                        else:
-                                            modified_annotation[k_list[0]] = {k_list[1]: v}
-                                    else:
-                                        if k_list[0] in modified_annotation:
-                                            if isinstance(modified_annotation[k_list[0]], list):
-                                                modified_annotation[k_list[0]].append(v)
-                                            else:
-                                                modified_annotation[k_list[0]] = [modified_annotation[k_list[0]], v]
-                                        else:
-                                            modified_annotation[k_list[0]] = v
-
-                                        
-                                elif prefix == 'modify':
-                                    if len(k_list) == 2:
-                                        if k_list[0] in modified_annotation:
-                                            modified_annotation[k_list[0]] = {k_list[1]: v}
-                                    else:
-                                        if k_list[0] in modified_annotation:
-                                            modified_annotation[k_list[0]] = v
-                                            
-                                elif prefix == 'delete':
-                                    if len(k_list) == 2:
-                                        if k_list[0] in modified_annotation and modified_annotation[k_list[0]][k_list[1]] == v:
-                                            del modified_annotation[k_list[0]][k_list[1]]
-                                    else:
-                                        if k_list[0] in modified_annotation and modified_annotation[k_list[0]] == v:
-                                            del modified_annotation[k_list[0]]                                                                        
-            new_annotate_list.append(modified_annotation)
-
-    # print(f"annotations_list {len(annotations_list)} vs new_annotate_list {len(new_annotate_list)}")
-    new_json['annotations'] = annotations_list#json.dumps(annotations_list, indent=4)
-    new_json['feedback'] = new_annotate_list#json.dumps(annotations_list, indent=4)
-    
-    # print("new_annotate_list", new_annotate_list)
-    # Create directories if they don't exist
-    reviewer_name = st.session_state.reviewer_name
-    
-    ######## When I use local server ######
-    # os.makedirs(f"./feedback/{reviewer_name}/{patient_id}", exist_ok=True)
-    
-    # # Save the new JSON
-    # with open(f"./feedback/{reviewer_name}/{patient_id}/{display_names}.json", "w") as f:
-    #     json.dump(new_json, f, indent=4)
-    
-    ######## When I use external driver ######
-    
-    reviewer_folder_id = create_folder(reviewer_name)
-    patient_folder_id = create_folder(patient_id, reviewer_folder_id)
-
-    # Serialize JSON to a string
-    new_json_str = json.dumps(new_json, indent=4)
-
-    # Create a temporary file and write the JSON string to it
-    with tempfile.NamedTemporaryFile(delete=False, mode='w', encoding='utf-8') as tmp:
-        tmp.write(new_json_str)
-        temp_name = tmp.name
-
-    # Upload the file
-    upload_to_drive(f"{display_names}.json", temp_name, 'application/json', patient_folder_id)
-    
-    print("file uploaded to google drive!")
-    # Remove the temporary file
-    os.unlink(temp_name)
+    # return patient_folder_id, feedback_data
 
 def del_files(service, folder_id, indent=0):
     results = service.files().list(
@@ -315,6 +239,7 @@ def del_files(service, folder_id, indent=0):
     ).execute()
     
     items = results.get('files', [])
+    
     
     if not items:
         print('No files found.')
@@ -333,12 +258,33 @@ def del_files(service, folder_id, indent=0):
 #     if os.path.exists(f"./feedback/{st.session_state.reviewer_name}/{patient_id}/{display_names}.json"):
 #         feedback_data = load_json(f"./feedback/{st.session_state.reviewer_name}/{patient_id}/{display_names}.json")
 #         return feedback_data
-    
+
+
+def get_full_path(service, file_id, file_name):
+    """Get the full path of a file or folder on Google Drive by recursively looking up its parents."""
+    path = [file_name]
+
+    while file_id:
+        response = service.files().get(fileId=file_id, fields='parents').execute()
+        if 'parents' in response:
+            parent_id = response['parents'][0]
+            parent_response = service.files().get(fileId=parent_id, fields='name').execute()
+            parent_name = parent_response['name']
+            path.insert(0, parent_name)
+            file_id = parent_id
+        else:
+            file_id = None
+
+    return "/".join(path)
+
+# full_path = get_full_path(drive_service, '1tHqNkaqdwT9EqZu5ndvP9e1x-DXW2BN9', '2_s55504914.csv')
+# print("full_path", full_path)
+
 # when Gdrive.
 def load_feedback(patient_id, display_names, service, folder_id):
     if folder_id is not None:
         results = service.files().list(
-            q=f"'{folder_id}' in parents and name='{patient_id}'",
+            q=f"'{folder_id}' in parents and name='{patient_id}' and mimeType='application/vnd.google-apps.folder'",
             pageSize=10,
             fields="files(id, name, mimeType)"
         ).execute()
@@ -348,30 +294,31 @@ def load_feedback(patient_id, display_names, service, folder_id):
             if item['mimeType'] == 'application/vnd.google-apps.folder':
                 subfolder_id = item['id']
                 subfolder_results = service.files().list(
-                    q=f"'{subfolder_id}' in parents and name='{display_names}.json'",
+                    q=f"'{subfolder_id}' in parents and name='{display_names}.csv'",
                     pageSize=10,
                     fields="files(id, name)"
                 ).execute()
                 
                 subfolder_items = subfolder_results.get('files', [])
                 if subfolder_items:
-                    json_file_id = subfolder_items[0]['id']
-                    feedback_data = load_json_from_drive(service, json_file_id)
+                    csv_file_id = subfolder_items[0]['id']
+                    feedback_data = load_csv_from_drive(service, csv_file_id)
                     return feedback_data
 
-        return None  # or whatever you want to return when the file doesn't exist
+    return None
 
 
-def load_json_from_drive(service, file_id):
+def load_csv_from_drive(service, file_id):
     request = service.files().get_media(fileId=file_id)
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fh, request)
+    csv_buffer = io.BytesIO()
+    downloader = MediaIoBaseDownload(csv_buffer, request)
     done = False
-    while not done:
+    while done is False:
         _, done = downloader.next_chunk()
     
-    file_content = fh.getvalue().decode()
-    return json.loads(file_content)
+    csv_buffer.seek(0)
+    df = pd.read_csv(csv_buffer)
+    return df
 
 
 def find_top_folder(service):
@@ -381,6 +328,8 @@ def find_top_folder(service):
         fields="files(id, name)"
     ).execute()
     items = results.get('files', [])
+    
+    # print("root folder path:", items)
     
     if items:
         return items[0]['id']
@@ -406,36 +355,6 @@ def tokenize_annotations(annotations):
         tokenized_annotations.extend(sent_tokenize(sent))
     return tokenized_annotations
 
-def count_json_files_in_subfolders(service, top_folder_id):
-    subfolder_results = service.files().list(
-        q=f"'{top_folder_id}' in parents and mimeType='application/vnd.google-apps.folder'",
-        pageSize=1000,
-        fields="files(id, name)"
-    ).execute()
-    
-    subfolders = subfolder_results.get('files', [])
-    
-    count_dict = {}  # 각 서브디렉터리에 있는 JSON 파일의 개수를 저장할 딕셔너리
-    
-    print("subfolders", subfolders)
-    
-    # 각 서브디렉터리에서 JSON 파일 찾기
-    for folder in subfolders:
-        folder_id = folder['id']
-        folder_name = folder['name']
-        
-        json_file_results = service.files().list(
-            q=f"'{folder_id}' in parents and mimeType='application/json'",
-            pageSize=1000,
-            fields="files(id, name)"
-        ).execute()
-        
-        json_files = json_file_results.get('files', [])
-        
-        count_dict[folder_name] = len(json_files)
-    
-    return count_dict
-
 
 def get_statistics(data, dfs):
     present_sections = {key: True for key, value in data.items() if value and key in ["History", "Findings", "Impression"]}
@@ -459,10 +378,12 @@ def get_statistics(data, dfs):
             sents_from_annos = list(set(df['sent']))
             sents_from_annos_tokenized = tokenize_annotations(sents_from_annos)
             missing_sents_for_section = [sent for sent in section_sents if sent not in sents_from_annos_tokenized]
-            if missing_sents_for_section:
+            if len(missing_sents_for_section) != 0 and missing_sents_for_section[0] != '':
+                # print("missing_sents_for_section", missing_sents_for_section)
                 missing_sents[sec] = missing_sents_for_section               
         else:                
             if len(section_sents) != 0 and section_sents[0] != '':
+                # print("section_sents", section_sents)
                 missing_sents[sec] = section_sents
                 
         if 'cat' in df.columns:
@@ -482,6 +403,64 @@ def get_statistics(data, dfs):
     
     return present_sections, sent_stats, cat_stats, dict(norm_ent_stats), missing_sents  # Assuming you want to return these
 
+# Function to create aggrid_grouped_options with multi-level headers
+def generate_aggrid_grouped_options(df, row1, row2):
+    existing_columns = df.columns.tolist()
+    tuples = [(r1, r2) for r1, r2 in zip(row1, row2) if r2 in existing_columns]
+
+    # Combine row1 with unique identifiers for duplicates
+    row1_unique = []
+    seen_row1 = {}
+    for r1, _ in tuples:
+        if r1 in seen_row1:
+            seen_row1[r1] += 1
+            row1_unique.append(f"{r1}_{seen_row1[r1]}")
+        else:
+            seen_row1[r1] = 1
+            row1_unique.append(r1)
+
+    # Create Ag-Grid Options
+    aggrid_grouped_options = {"columnDefs": []}
+    header_groups = {}
+    for r1, r2 in tuples:
+        if r1 not in header_groups:
+            header_groups[r1] = {"headerName": r1, "children": []}
+        header_groups[r1]["children"].append({"headerName": r2, "field": r2,  "width": 100})  # set width to 100
+    
+    aggrid_grouped_options["columnDefs"] = list(header_groups.values())
+
+    return aggrid_grouped_options
+
+# Define a mapping of column name variations to standard names
+column_variations = {
+    'emerge': ['emerg', 'emerge'],
+    'no change': ['nchg', 'no change'],
+    'distribution': ['dist', 'distribution', 'distribute'],
+    'severity': ['sev', 'severity', 'seve'],
+    'location': ['loc', 'location'],
+    'morphology': ['mor', 'morp', 'morph'],
+    'improved': ['impr', 'improve', 'improved', 'imp', 'improv', 'improvement'],
+    'reposition': ['repl', 'replace'],
+    'resolve': ['res', 'resolve', 'resolved', 'resolv'],
+    'comparision': ['com', 'comp', 'comparision', 'compare'],
+}
+
+group_by_columns = ['sent', 'sent_idx', 'ent', 'status', 'cat', 'location']
+
+# Determine columns to be aggregated
+aggregate_columns = ['morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
+
+# Function to map variations to standard column names
+def standardize_columns(df, variations_map):
+    for standard_name, variations in variations_map.items():
+        for variation in variations:
+            if variation in df.columns:
+                df.rename(columns={variation: standard_name}, inplace=True)
+    return df
+
+def clean_list(value_list):
+    # Remove empty strings and strings consisting only of commas and/or spaces
+    return [item for item in value_list if item.strip(',') and item.strip()]
 
 def display_data(data):
     sections = {
@@ -492,33 +471,117 @@ def display_data(data):
     
     annotations = data.get('annotations', [])
 
+    # print("annotations", annotations)
     # annotations가 문자열 형태라면 JSON 객체로 변환
     if isinstance(annotations, str):
         try:
             annotations = json.loads(annotations)
+            
         except json.JSONDecodeError:
             st.error(f"Failed to parse annotations in file: {selected_file}")
             annotations = []
 
     dfs = {}
+    aggrid_grouped_options = {}
+    row1 = ['sentence', 'sentence','entity', 'status', 'status', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal']
+    row2 = ['sent', 'sent_idx','ent', 'status', 'cat', 'location', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve']
+
+
     for sec in sections.keys():
         filtered_annotations = [item for item in annotations if item['sec'] == sec]
         
-        if not filtered_annotations:
-            dfs[sec] = pd.DataFrame()
-            continue
-        
-        df_sec = pd.DataFrame(filtered_annotations)
-        
-        # 세부 구조화 부분
-        df_sec[['ori_ent', 'norm_ent']] = df_sec['ent'].str.split('|', expand=True)
-        attr_df = df_sec['attr'].apply(pd.Series)
-        df_sec['loc'] = df_sec['rel'].apply(lambda x: x.get('loc') if isinstance(x, dict) else None)
-        df_sec['asso'] = df_sec['rel'].apply(lambda x: x.get('asso') if isinstance(x, dict) else None)
-        df_sec = df_sec.drop(columns=['ent', 'attr', 'rel']).join(attr_df)
-        dfs[sec] = df_sec
+        # Initialize empty DataFrame with all columns from row2
+        df_sec = pd.DataFrame(columns=row2)
 
-    return sections, dfs, annotations
+        if filtered_annotations:
+            df_sec = pd.DataFrame(filtered_annotations)
+            
+            # print("df_sec", df_sec)
+
+            # 모든 행의 'attr' 값이 빈 사전, None, 또는 빈 문자열인지 확인
+            all_empty = df_sec['attr'].apply(lambda x: x == {} or x is None or x == '').all()
+
+            # all_empty가 False인 경우에만 attr 관련 처리 수행
+            if not all_empty:
+                attr_data = []
+                for _, row in df_sec.iterrows():
+                    attr_dict = row.get('attr', {})
+                    
+                    if not attr_dict:
+                        # attr_dict가 비어 있으면, 기존 row의 데이터를 유지
+                        attr_data.append(row.to_dict())
+                        continue  # 다음 행으로 넘어감
+
+                    # attr_dict에 데이터가 있는 경우 처리
+                    for key, compound_val in attr_dict.items():
+                        # 콤마로 구분된 다중 값을 분리
+                        compound_values_processed = False
+
+                        if isinstance(compound_val, list):
+                            compound_val = ', '.join(compound_val)
+
+                        # print("compound_val", compound_val)
+                        
+                        for val in compound_val.split(', '):
+                            # '|'로 키와 값을 분리
+                            parts = val.split('|')
+                            if len(parts) == 2:
+                                # 분리된 값이 정확히 두 부분일 때, 새로운 키와 값으로 분리하여 사용
+                                new_key, new_val = parts
+                                attr_data.append({**row.to_dict(), new_key: new_val})
+                                compound_values_processed = True
+                            else:
+                                # '|'가 없거나 두 개 이상 포함되어 있는 경우, 에러 처리나 다른 로직 적용
+                                print(f"Unexpected format in 'attr' value: {val}")
+                        
+                        if not compound_values_processed:
+                            # 콤마로 구분된 값이 처리되지 않았다면, 즉 '|'로 분리할 수 없는 경우
+                            # 기존 row의 데이터를 그대로 유지
+                            attr_data.append(row.to_dict())
+                df_sec = pd.DataFrame(attr_data)
+            
+            # print("11 df_sec", df_sec.columns)
+            df_sec = df_sec.drop(columns=['attr'], errors='ignore')
+            
+
+            # Standardize column names based on variations
+            df_sec = standardize_columns(df_sec, column_variations)
+            
+        extra_columns = set(df_sec.columns) - set(row2)
+        if extra_columns and not extra_columns.issubset({'sent_idx', 'sec'}):
+            raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
+
+        df_sec = df_sec.reindex(columns=row2).fillna('')
+        # print("22 df_sec", df_sec['sent_idx'])
+        
+        #######################################################################################################################################################################################
+        # Ensure each aggregate column is a list (this simplifies combining them later)
+        for column in aggregate_columns:
+            df_sec[column] = df_sec[column].apply(lambda x: [x] if pd.notnull(x) else [])
+
+        # Group by the specified columns and aggregate the rest
+        df_sec = df_sec.groupby(group_by_columns, as_index=False).agg({col: 'sum' for col in aggregate_columns})
+
+        # Optionally, remove duplicates from each aggregated list
+        for column in aggregate_columns:
+            df_sec[column] = df_sec[column].apply(clean_list)
+            # df_sec[column] = df_sec[column].apply(lambda x: list(set(x)))
+
+        # Your aggregated_df now contains combined information for 'morphology' to 'resolve'
+        # based on unique combinations of 'sent', 'ent', 'status', 'cat', and 'location'
+        df_sec = df_sec.sort_values(by='sent_idx', ascending=True)
+
+        # print("aggregated_df", df_sec['size'])
+        # print("33 df_sec", df_sec.columns)
+        df_sec = df_sec.drop(columns=['sent_idx'], errors='ignore')
+        ########################################################################################################################################################################################
+        
+        dfs[sec] = df_sec
+        aggrid_grouped_options[sec] = generate_aggrid_grouped_options(df_sec, row1, row2)
+
+    return sections, dfs, annotations, aggrid_grouped_options
+
+
 
 
 # if 'reviewer_name' not in st.session_state or not st.session_state.reviewer_name:
@@ -554,7 +617,10 @@ if not st.session_state.reviewer_name:
             st.write("""
             ## 소개
             이 앱은 GPT-4를 통한 entity-relation-attribute 추출 결과에 대한 피드백을 위한 도구입니다. 
-            리뷰어가 피드백을 제공할 총 데이터는 평균 10.07개의 study sequence를 갖는 293명의 환자로부터 얻어진 3,269개의 리포트입니다. 최종 완료된 리뷰는 테스트 세트로 사용될 예정입니다.
+            
+            리뷰어가 피드백을 제공할 총 데이터는 평균 10.07개의 study sequence를 갖는 293명의 환자로부터 얻어진 3,269개의 리포트입니다.
+            
+            최종 완료된 리뷰는 테스트 세트로 사용될 예정입니다.
             
             ## 시작하기 전에
             1. **입력은 영어로 작성 해주세요.**
@@ -592,8 +658,11 @@ if not st.session_state.reviewer_name:
             st.write("""
 
             ## Introduction
-            This app serves as a tool for providing feedback on the entity-relation-attribute extraction results via GPT-4. 
-            Reviewers will work with a total of 3,269 reports from 293 patients, each with an average of 10.07 study sequences. The finalized reviews are intended for use in test set.
+            This app serves as a tool for providing feedback on the entity-relation-attribute extraction results via GPT-4-turbo. 
+            
+            Reviewers will work with a total of 3,269 reports from 293 patients, each with an average of 10.07 study sequences.
+            
+            The finalized reviews are intended for use in test set.
 
             ## Before You Start
             1. **Please use English for feedback.**
@@ -635,39 +704,33 @@ if not st.session_state.reviewer_name:
 
             if st.session_state.show_cof:
                 st.markdown("""
-            - COF (Clinical Objective Findings)
-            
-                Refers to evidence-based medical information obtained through lab tests, physical exam, and other diagnostic procedures that are not based on chest x-ray imaging.
+                - COF (Clinical Objective Findings)
                 
-                ex) 'hemoglobin levels', 'white blood cell count', 'liver function tests','heart rate', 'Systemic inflammatory response syndrom (SIRS)', 'temperature'
-            
-            - SYM (Symptom)
-            
-                A subjective indication of a disease or a change in condition as perceived by the patient. This is based on personal experiences and feelings, and they are not directly measurable.
+                    Evidence-based medical information obtained through lab tests, physical exams, and other diagnostic procedures not based on chest x-ray imaging.
+                    
+                    ex) 'hemoglobin levels', 'white blood cell count', 'liver function tests','heart rate', 'Systemic inflammatory response syndrom (SIRS)', 'temperature'
                 
-                ex) 'fatigue', 'cough', 'shortness of breath', 'vomiting'
-            
-            - ROF-ANAT (Radiological objective findings-Anatomy)
-            
-                Refers to anatomical finding based solely on what is observable within the given image. It encompasses any discernible medical findings visible in the image itself, not inferences based on the patient's history or results from previous studies.
+                - SYM (Symptom)
+                    
+                    Subjective indications of a disease or a change in condition as perceived by the patient, not directly measurable.
+                    
+                    ex) 'fatigue', 'cough', 'shortness of breath', 'vomiting'
                 
-                ex) 'Lung', 'Cardiomediastinal silhouette'
-            
-            - ROF-PATH (Radiological objective findings-Pathology)
-            
-                Refers to pathological finding based solely on what is observable within the given image. It encompasses any discernible medical findings visible in the image itself, not inferences based on the patient's history or results from previous studies.
+                - ROF (Radiological objective findings)
+                    
+                    Identifiable radiological findings from a chest X-ray image alone, without external information such as the patient's history or other source results.
+                    
+                    ex) 'opacity', 'thickening', 'density', 'lung volume', 'collapse','consolidation', 'inﬁltration', 'atelectasis', 'pulmonary edema', 'pleural effusion', 'bronchiectasis', 'calciﬁcation', 'pneumothorax', 'hydropneumothorax', 'lesion', 'mass', 'nodule', 'fracture', 'hyperaeration', 'Cyst', 'Bullae', 'Scoliosis'
                 
-                ex) 'Opacity', 'Thickening', 'Consolidation', 'Inﬁltration', 'Atelectasis', 'Collapse', 'Pulmonary Edema', 'Congestion', 'Reticular Markings, ILD Pattern', 'Pleural Effusion', 'Bronchiectasis', 'Calciﬁcation', 'Pneumomediastinum', 'Pneumoperitoneum', 'Pneumothorax', 'Hydropneumothorax', 'Lesion', 'Mass', 'Nodule', 'Fracture', 'Hyperaeration', 'Cyst', 'Bullae', 'Hemidiaphragm', 'Eventration', 'Hernia', 'Scoliosis', 'Osteoarthritis', 'Fibrosis', 'Tortuous Aorta'
-            
-            - RSF (Radiological subjective findings)
+                - RSF (Radiological subjective findings)
+                    
+                    Diagnosis based on a physician's judgment or reasoning incorporating the chest x-ray image and external information like patient history or lab findings.       
+                    
+                    ex) 'pneumonia', 'heart failure', 'copd', 'granulomatous disease', 'interstitial lung disease', 'goiter', 'lung cancer', 'pericarditis', 'pulmonary hypertension', 'tumor'
                 
-                Refers to diagnosis derived from a physician's subjective judgment or reasoning, based not only on the given image but also on external information such as the patient's history, lab findings, or results from prior studies.
-                
-                ex) 'pneumonia', 'ﬂuid overload/heart failure', 'copd/emphysema', 'granulomatous disease', 'interstitial lung disease', 'goiter', 'lung cancer', 'aspiration', 'alveolar hemorrhage', 'pericardial effusion', 'pericarditis', 'pulmonary hypertension', 'tumor'
-            
-            - DEV (Medical devices)
-                
-                ex) chest tube, mediastinal drain, pigtail catheter, endotracheal tube, sternotomy, etc.""")
+                - OTH (Other object)
+                    
+                    Pertains to foreign objects (e.g., 'metal fragments', 'glass', 'bullets') or medical devices (e.g., 'chest tubes', 'endotracheal tubes') observed in chest X-ray images.""")
 
             if st.button("4 Existence", key='btn_sym'):
                 st.session_state.show_sym = not st.session_state.show_sym
@@ -675,7 +738,7 @@ if not st.session_state.reviewer_name:
             if st.session_state.show_sym:
                 st.markdown("""
             
-            2. Existence (exist): Based on 'Definitive' or 'Tentative' diagnosis, and categorize it as 'Positively mentioned' (DP or TP); present or abnormal, 'Negatively mentioned' (DN or TN); absent or normal.
+            2. Status: Classify entity's status as 'Definitive' or 'Tentative' diagnosis, and categorize it as 'Positively mentioned'; present or abnormal, 'Negatively mentioned'; absent or normal. Answer as 'DP', 'DN' for Definitive, and 'TP', 'TN' for Tentative diagnoses.
             """)
         
             if st.button("2 Relation", key='btn_rel'):
@@ -683,11 +746,7 @@ if not st.session_state.reviewer_name:
 
             if st.session_state.show_rel:
                 st.markdown("""
-            1. Location (loc): If the spatial concept of target entity exist, normalize the location using the given list: ['right lung', 'right apical zone', 'right lower lung zone', 'right hilar structures', 'left lung', 'left apical zone', 'left lower lung zone', 'left hilar structures', 'mediastinum', 'cardiac silhouette', 'right costophrenic angle', 'left costophrenic angle', 'upper mediastinum', 'spine', 'right clavicle', 'left clavicle', 'left mid lung zone', 'right hemidiaphragm', 'left hemidiaphragm', 'svc', 'abdomen', 'trachea', 'right upper lung zone', 'left upper lung zone', 'aortic arch', 'right mid lung zone', 'right atrium', 'cavoatrial junction', 'carina'].
-                But, if normalization difficult, extract the concept as is.
-                
-            2. Clinical association (asso): Refers to attributes that describe a relationship in which a particular medical finding or condition (A) is either caused by or closely linked with another finding or condition (B).
-                ex) 1. 'pnenumonia' associated with 'lung opacity', 'fatigue'. 2. 'pulmonary edema' associated with 'lung opacity', 'shortness of breath', 'leg swelling'. 3. 'lung opacity' associated with 'nipple shadow'.
+            3. Location: The precise anatomical area or structure where the observation is noted, encompassing both broad regions (left, right, bileteral) and specific biological structures.
                 """)
                 
             if st.button("11 Attribution", key='btn_attr'):
@@ -695,7 +754,7 @@ if not st.session_state.reviewer_name:
 
             if st.session_state.show_attr:
                 st.markdown("""
-            1. Appearance (appr), which can be categorized as
+            1. Appearance (appearance), which can be categorized as
                 - Morphology (mor): Physical form, structure, shape, pattern or texture of an object or substance. (e.g., 'irregular', 'rounded', 'dense', 'ground-glass',  'patchy', 'linear', 'plate-like', 'nodular')
                 - Distribution (dist): Arrangement, spread of objects or elements within a particular area or space (e.g., 'focal', 'multifocal/multi-focal', 'scattered', 'hazy', 'widespread')
                 - Size (size): Physical dimensions or overall magnitude of an entity ('small', 'large', 'massive', 'subtle', 'minor', 'xx cm')
@@ -707,13 +766,96 @@ if not st.session_state.reviewer_name:
             3. Temporal (tmp) differential diagnosis, which can be categorized as
                 - Emergence (emerg): Refers to the chronological progression or appearance of a medical finding or device. Unlike terms that highlight the comparative change in condition, this concept emphasizes the chronological state, either within a single study or in relation to a sequential study. (e.g., new, old, acute, subacute, chronic, remote, recurrent).
                 - No Change (nchg): Refers to the consistent state or condition that remains unaltered from a prior study. (e.g., no changed, unchanged, similar, persistent)
-                - Improvement (improved): Refers to a positive change or stabilization in a patient's clinical state when compared to a prior assessment. (e.g., improved, decreased, stable)
+                - Improvement (impr): Refers to a positive change or stabilization in a patient's clinical state when compared to a prior assessment. (e.g., improved, decreased, stable)
                 - Worsened (worsened): Refers to the negative change in a patient's clinical state in comparison to a prior assessment. (e.g., worsened, increased)
                 - Replacement of DEV (replace): Refers to the altered position of a medical device inside a patient compared to prior studies. (e.g., displaced, repositioned).
                 - Resolve (resolve): Refers to the complete disappearance of a specific medical finding or device from imaging. (e.g., resolved, cleared).
                 """)
-                                        
+
+
+def find_folder_id_by_name(service, folder_name):
+    # 폴더 이름으로 폴더 검색
+    results = service.files().list(
+        q=f"mimeType='application/vnd.google-apps.folder' and name='{folder_name}'",
+        fields="files(id, name)"
+    ).execute()
+    folders = results.get('files', [])
+    if not folders:
+        print(f"No folder found with name: {folder_name}")
+        return None
+    # 첫 번째 검색 결과의 폴더 ID 반환
+    folder_id = folders[0]['id']
+    print(f"Folder ID for '{folder_name}': {folder_id}")
+    return folder_id
+
+def download_folder_by_name(service, folder_name, local_path):
+    folder_id = find_folder_id_by_name(service, folder_name)
+    if folder_id:
+        download_folder(service, folder_id, local_path)
+    else:
+        print("Failed to find folder or download content.")
+
+def list_to_string(value):
+    # If the input value is None, return None immediately
+    if value is None:
+        return ''
+
+    # If the input value is not a list, treat it as a single-element list
+    if not isinstance(value, list):
+        value = [value]
+
+    # Clean the list: Remove duplicates, empty strings, and strip whitespace
+    cleaned_list = list(set(item.strip() for item in value if item and item.strip()))
+
+    # Convert to string and return None if the cleaned list is empty
+    return ', '.join(cleaned_list) if cleaned_list else ''                         
             
+def download_folder(service, folder_id, local_path):
+    def download_file(file_id, file_name, local_file_path):
+        request = service.files().get_media(fileId=file_id)
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+        with open(local_file_path, 'wb') as f:
+            fh.seek(0)
+            f.write(fh.read())
+        print(f"Downloaded {file_name} to {local_file_path}")
+
+    def list_files_in_folder(folder_id, local_path):
+        # 폴더가 없으면 생성
+        if not os.path.exists(local_path):
+            os.makedirs(local_path)
+
+        results = service.files().list(
+            q=f"'{folder_id}' in parents",
+            orderBy='createdTime desc',
+            fields="nextPageToken, files(id, name, mimeType, createdTime)"
+        ).execute()
+        
+        items = results.get('files', [])
+        latest_files = {}
+
+        # 동일한 이름을 가진 파일 중 최신 파일만 선택
+        for item in items:
+            if item['mimeType'] == 'application/vnd.google-apps.folder':
+                # 하위 폴더에 대해 재귀적으로 처리
+                new_local_path = os.path.join(local_path, item['name'])
+                list_files_in_folder(item['id'], new_local_path)
+            else:
+                if item['name'] not in latest_files:
+                    latest_files[item['name']] = item
+
+        # 저장된 최신 파일들을 다운로드
+        for file_info in latest_files.values():
+            local_file_path = os.path.join(local_path, file_info['name'])
+            download_file(file_info['id'], file_info['name'], local_file_path)
+
+    # 최상위 폴더 이름 가져오기 (로컬 경로 생성에 사용)
+    folder_name = service.files().get(fileId=folder_id, fields='name').execute().get('name')
+    top_local_path = os.path.join(local_path, folder_name)
+    list_files_in_folder(folder_id, top_local_path)
 
 # If reviewer_name is set, display the rest of the app
 if st.session_state.reviewer_name:    
@@ -769,7 +911,8 @@ if st.session_state.reviewer_name:
         st.session_state.additional_feedback_count = {}
         st.session_state.checkbox_states = {}
         st.session_state.row_count_state = {}
-        
+        st.session_state.my_dfs = {}
+
     else:
         # 이전에 저장한 피드백이 있다면 불러옴
         previous_feedback = {}#load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
@@ -779,11 +922,12 @@ if st.session_state.reviewer_name:
     st.session_state.last_selected_file = selected_file
 
     # Load and display selected JSON data
-    data = load_json(selected_file)
-    sections, dfs, annotations = display_data(data)
-
+    jsonfile = load_json(selected_file)
+    
+    sections, dfs, annotations, aggrid_grouped_options = display_data(jsonfile)
+    
     # Get statistics    
-    present_sections, sent_stats, cat_stats, norm_ent_stats, missing_sents = get_statistics(data, dfs)
+    present_sections, sent_stats, cat_stats, norm_ent_stats, missing_sents = get_statistics(jsonfile, dfs)
 
     # 파일 통계 섹션 시작
     # 전체 개수를 계산 (선택 사항)
@@ -813,223 +957,91 @@ if st.session_state.reviewer_name:
             st.write(f"  - {sec} ({count_per_key[sec]}): {', '.join(sents)}")
     
     feedback_data = {}
-    correct_rows = {}
-    # additional_feedback_count = {}  # Commented this out
-    feedback_columns = ['include', 'delete', 'modify', 'opinion']
-    desired_order = ['ent', 'cat', 'exist', 'rel', 'attr', 'sent']
-
-    example_text = """For example: {ent: endotracheal tube|tube,
-            cat: DEV,
-            exist: DP|is,
-            loc: upper margin of the clavicles,
-            carina,
-            appr: size|45 mm
-            }
-            """
-    for sec, content in sections.items():
-        feedback_data[sec] = {}
-        correct_rows[sec] = {}
+    for current_section, content in sections.items():
+        feedback_data[current_section] = {}
         st.write("")
-        # st.write(f"**{sec}:** {content}")
-        st.markdown(f" <span style='font-size: 2em;'> :clipboard: {sec}: </span> <span style='font-size: 1.2em;'> {content}</span>", unsafe_allow_html=True)
+        st.markdown(f" <span style='font-size: 2em;'> :clipboard: {current_section}: </span> <span style='font-size: 1.2em;'> {content}</span>", unsafe_allow_html=True)
 
-        current_df = dfs[sec]
-        columns_to_drop = ["sec", "sent_idx"]
-        columns_to_drop = [col for col in columns_to_drop if col in current_df.columns]
-                
-        # if columns_to_drop:
-        filtered_df = current_df.drop(columns=columns_to_drop)
-                
-        if len(filtered_df) == 0:            
-            st.write(f"No annotations.")
-            # sec에 해당하는 키를 동적으로 초기화
-            st.session_state.row_count_state.setdefault(sec, 0)
+        current_df = dfs[current_section]
+        if isinstance(previous_feedback, pd.DataFrame):    
+            filtered_df = previous_feedback[previous_feedback['section'] == current_section]
 
-            # 'Add Row'와 'Remove Row' 버튼을 위한 컬럼
-            col_add_remove_submit = st.columns([1, 1, 2])  # 가중치를 사용하여 'Submit Feedback' 버튼을 가장 오른쪽에 크게 만듭니다.
-
-            # "Add Row" 버튼
-            if col_add_remove_submit[0].button(f"Add for {sec} section", key=f"{sec}_add_row"):
-                st.session_state.row_count_state[sec] += 1
-                
-            # "Remove Row" 버튼
-            if col_add_remove_submit[1].button(f"Remove", key=f"{sec}_remove_row"):
-                if st.session_state.row_count_state[sec] > 0:  # 행 수가 1 이상일 경우만 제거
-                    st.session_state.row_count_state[sec] -= 1
-           
-            # 텍스트 박스를 동적으로 생성
-            for i in range(st.session_state.row_count_state[sec]):
-                feedback_data[sec][str(i)] = st.text_area(f"Additional feedback.", 
-                                                           value=example_text,  # 기본 텍스트를 설정
-                                                          key=f"{sec}_feedback_for_row_{i+1}")
-
-            # print("11 feedback_data", feedback_data)
-            # input("STOP!")  
-
-            if previous_feedback:
-                annotations_list = previous_feedback.get('feedback', [])
-                # print("annotations_list", annotations_list)
-                # input("SOTP!!")                
-                
-                prev_sec_list = [item for item in annotations_list if item['sec'] == sec]
-                reordered_annotations = []
-                
-                print("prev_sec_list", prev_sec_list)
-                
-                if len(prev_sec_list) != 0:    
-                    for prev_annot in prev_sec_list:
-                        reordered_dict = {k: prev_annot[k] for k in desired_order if k in prev_annot}
-                        reordered_annotations.append(reordered_dict)
-                    
-                    st.write(":sunglasses: Previous Results:")
-                    for a in reordered_annotations:
-                        st.write(f"  - {a}")            
-        else:
-            with st.expander(f"**{sec} DataFrame**"):
-                st.write(filtered_df)                       
-            
-            # additional_feedback_count[sec] = {}  # Commented this out
-            sec_list = [item for item in annotations if item['sec'] == sec]
-            
-            if previous_feedback:
-                annotations_list = previous_feedback.get('feedback', [])
-                prev_sec_list = [item for item in annotations_list if item['sec'] == sec]
-                reordered_annotations = []
-                
-                if len(prev_sec_list) != 0:    
-                    for prev_annot in prev_sec_list:
-                        reordered_dict = {k: prev_annot[k] for k in desired_order if k in prev_annot}
-                        reordered_annotations.append(reordered_dict)
-                    
-                    for a in reordered_annotations:
-                        st.write(":sunglasses: Previous Results:")
-                        st.write(f"  - {a}")
-                else:
-                    error_message = f"No feedback found for this section."
+            if not filtered_df.empty:
+                st.write(":sunglasses: Previous Results:")
+                st.write(filtered_df)
+            else:
+                if len(content) != 0 and content != '':
+                    error_message = f"No previous feedback. Please start feedback for this section."
                     st.error(error_message, icon="🚨")
-
-
-            with st.expander(f"**Review {sec}**"):
-                for index, row in current_df.iterrows():
-                    # print("current_dfcurrent_df", current_df)
-                    # print(f"{index}index and {current_df[index]}")
-                    reordered_annotations = []
-                    sent_only = []
-                    for annotation in sec_list:
-                        reordered_dict = {k: annotation[k] for k in ['ent', 'cat', 'exist', 'rel', 'attr'] if k in annotation}
-                        _, new_dict2 = extract_key_values(reordered_dict)
-                        reordered_annotations.append(new_dict2)
-                        sent_dict = annotation['sent']
-                        sent_only.append(sent_dict)
                     
-                    line_show = str(reordered_annotations[index])
-                    line_show = line_show.replace("'", "")                    
-                    
-                    st.write(f"  - Row {index}: {sent_only[index]}")
-                    st.write(line_show)
-                    
-                    feedback_data[sec][index] = {}
-                    correct_rows[sec][index] = {}
-
-                    # Initialize session_state for the section and index
-                    if sec not in st.session_state.additional_feedback_count:
-                        st.session_state.additional_feedback_count[sec] = {}
-                    st.session_state.additional_feedback_count[sec].setdefault(index, {col: 1 for col in feedback_columns})
-
-                    col_list = st.columns(len(feedback_columns) + 1)
-                    correct_key = f"{sec}_correct_{index}"
-                    overall_correct = col_list[0].checkbox(f":thumbsup:", 
-                                                            value=st.session_state.checkbox_states.get(correct_key, False),  # 상태 가져오기
-                                                            key=correct_key)
-                    st.session_state.checkbox_states[correct_key] = overall_correct
-
-
-                    if overall_correct:
-                        feedback_data[sec][index] = 'all_correct'
-                    else:
-                        for col_num, col_name in enumerate(feedback_columns):
-                            nested_col_list = col_list[col_num + 1].columns(3)
-                            correct = nested_col_list[0].text(f"{col_name}")
-                            button_col1, button_col2 = nested_col_list[1], nested_col_list[2]
-
-                            if button_col1.button(f":heavy_plus_sign:", key=f"{sec}_add_more_{index}_{col_name}"):
-                                st.session_state.additional_feedback_count[sec][index][col_name] += 1
-
-                            if button_col2.button(f":heavy_minus_sign:", key=f"{sec}_remove_{index}_{col_name}"):
-                                if st.session_state.additional_feedback_count[sec][index][col_name] > 1:
-                                    st.session_state.additional_feedback_count[sec][index][col_name] -= 1
-
-                            # Dynamically generate additional feedback text boxes
-                            for i in range(2, st.session_state.additional_feedback_count[sec][index][col_name] + 1):
-                                additional_feedback_key = f"{sec}_feedback_{index}_{col_name}_{i-1}"
-                                additional_feedback = col_list[col_num + 1].text_input(f"{col_name} {i-1}", key=additional_feedback_key)
-                                feedback_data[sec][index][f"{col_name}_{i-1}"] = additional_feedback
-
-                # # 'Submit Feedback' 버튼
-                if st.button('Submit Feedback', key=f"unique_key_for_submit_button_{sec}"):
-                    save_feedback(selected_patient, selected_display_name, feedback_data, feedback_columns)
-                    # st.experimental_rerun()
-                    now_feedback = load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
-
-                    st.write(":point_right: Updated Results:")
-                    
-                    # If now_feedback is already a Python dict, no need for json.loads
-                    feedback_list = now_feedback.get('feedback', [])                   
-                    reordered_annotations = []
-
-                    sec_list = [a for a in feedback_list if a['sec'] == sec]
-                    
-                    for annotation in sec_list:
-                        reordered_dict = {k: annotation[k] for k in desired_order if k in annotation}
-                        reordered_annotations.append(reordered_dict)
-                    
-                    for annotation in reordered_annotations:
-                        st.write(f"  - {annotation}")                    
-                else:
-                    st.write("No feedback found for this section.")
-
-            # sec에 해당하는 키를 동적으로 초기화
-            st.session_state.row_count_state.setdefault(sec, 0)
-
-            # 'Add Row'와 'Remove Row' 버튼을 위한 컬럼
-            col_add_remove_submit = st.columns([1, 1, 2])  # 가중치를 사용하여 'Submit Feedback' 버튼을 가장 오른쪽에 크게 만듭니다.
-
-            # "Add Row" 버튼
-            if col_add_remove_submit[0].button(f"Add for {sec} section", key=f"{sec}_add_row"):
-                st.session_state.row_count_state[sec] += 1
-
-            # "Remove Row" 버튼
-            if col_add_remove_submit[1].button(f"Remove", key=f"{sec}_remove_row"):
-                if st.session_state.row_count_state[sec] > 0:  # 행 수가 1 이상일 경우만 제거
-                    st.session_state.row_count_state[sec] -= 1
-
-            # 텍스트 박스를 동적으로 생성
-            for i in range(st.session_state.row_count_state[sec]):
-                st.text_area(f"Additional feedback.", 
-                 value=example_text,  # 기본 텍스트를 설정
-                 key=f"{sec}_feedback_for_row_{i+1}")
-
-        
-        # {ent: endotracheal tube|tube, cat: DEV, exist: DP|is, loc: upper margin of the clavicles, carina, appr: size|45 mm}
-        
-        
-        # # 'Submit Feedback for whole' 버튼
-        if col_add_remove_submit[2].button('Submit', key=f"additional_submit_button_{sec}"):
-            save_feedback(selected_patient, selected_display_name, feedback_data, feedback_columns)
-            # st.experimental_rerun()
-            now_feedback = load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
-
-            st.write(":pushpin: Newely added Results:")
+        ################################################################################################
+        with st.expander(f"**{current_section} DataFrame**"):
+            if 'my_dfs' not in st.session_state:
+                st.session_state.my_dfs = {}
             
-            # If now_feedback is already a Python dict, no need for json.loads
-            feedback_list = now_feedback.get('feedback', [])
-            reordered_annotations = []
+            if current_section not in st.session_state.my_dfs:
+                initial_df = current_df.copy()
+                initial_df.columns = initial_df.columns.astype(str)
+                st.session_state.my_dfs[current_section] = initial_df
 
-            sec_list = [a for a in feedback_list if a['sec'] == sec]           
+            # Add Row 버튼
+            if st.button('Add Row', key=f'add_row_button_{current_section}'):
+                columns = st.session_state.my_dfs[current_section].columns.tolist()
+                new_row = pd.DataFrame([pd.Series({col: '' for col in columns})])
+                st.session_state.my_dfs[current_section] = pd.concat([st.session_state.my_dfs[current_section], new_row], ignore_index=True)
+
+            # Remove Last Row 버튼
+            if st.button('Remove Last Row', key=f'remove_last_row_button_{current_section}'):
+                if len(st.session_state.my_dfs[current_section]) > 0:  # Check if DataFrame is not empty
+                    st.session_state.my_dfs[current_section].drop(st.session_state.my_dfs[current_section].index[-1], inplace=True)
+                    st.session_state.my_dfs[current_section].reset_index(drop=True, inplace=True)
+
+            gb = GridOptionsBuilder.from_dataframe(st.session_state.my_dfs[current_section])
+            gb.configure_default_column(groupable=True, value=True, enableRowGroup=True, editable=True)
+            gb.configure_grid_options(enableCellTextSelection=True)
             
-            for annotation in sec_list:
-                st.write(f":heavy_plus_sign: {annotation}")
+            # Merge the custom columnDefs into the gridOptions
+            original_grid_options = gb.build()
+            if current_section in aggrid_grouped_options:
+                original_grid_options['columnDefs'] = aggrid_grouped_options[current_section]['columnDefs']
+            else:
+                # Handle the case where the section does not exist in aggrid_grouped_options
+                original_grid_options['columnDefs'] = []
+            
+            ag_grid_key = f"{current_section}_dataframe_{hash(str(st.session_state.my_dfs[current_section]))}"
+            response = AgGrid(
+                data=st.session_state.my_dfs[current_section],
+                gridOptions=original_grid_options,
+                width='100%',
+                data_return_mode='AS_INPUT',
+                update_mode=GridUpdateMode.VALUE_CHANGED,
+                key=ag_grid_key  # updated key
+            )
+            
+            updated_df = pd.DataFrame(response['data'])
+            for column in aggregate_columns:
+                updated_df[column] = updated_df[column].apply(list_to_string)
+            st.session_state.my_dfs[current_section] = updated_df
+
+            # print("jsonfile", jsonfile)
+            # print("st.session_state.my_dfs[current_section]", st.session_state.my_dfs[current_section])
+
+            # download_folder_by_name(drive_service, 'jh', '/Users/super_moon/Desktop/streamlit/feedback_result')
+
+            # # 'Submit Feedback' 버튼
+            if st.button('Submit Feedback', key=f"unique_key_for_submit_button_{current_section}"):
+                save_feedback(jsonfile, st.session_state.my_dfs[current_section], current_section, content, selected_display_name, feedback_data)
+                
+                # st.experimental_rerun()
+                now_feedback = load_feedback(selected_patient, selected_display_name, drive_service, find_top_folder(drive_service))
+                filtered_df = now_feedback[now_feedback['section'] == current_section]
+
+                st.write(":point_right: Updated Results:")
+                st.write(filtered_df)
             
 
-        else:
-            st.write("No feedback found for this section.")
+            else:
+                st.write("No feedback found for this section.")
+                
+                
+                
