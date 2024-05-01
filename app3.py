@@ -727,7 +727,7 @@ if not st.session_state.reviewer_name:
     with col3:
         with st.expander("Entity schema", expanded=False):
             st.markdown("Click button to see entity schema.")
-            if st.button("6 Entity type", key='btn_cof'):
+            if st.button("5 Entity type", key='btn_cof'):
                 st.session_state.show_cof = not st.session_state.show_cof
 
             if st.session_state.show_cof:
