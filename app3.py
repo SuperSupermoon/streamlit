@@ -760,7 +760,7 @@ if not st.session_state.reviewer_name:
                     
                     Pertains to foreign objects (e.g., 'metal fragments', 'glass', 'bullets') or medical devices (e.g., 'chest tubes', 'endotracheal tubes') observed in chest X-ray images.""")
 
-            if st.button("4 Existence", key='btn_sym'):
+            if st.button("4 Status", key='btn_sym'):
                 st.session_state.show_sym = not st.session_state.show_sym
 
             if st.session_state.show_sym:
