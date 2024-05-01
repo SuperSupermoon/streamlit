@@ -803,7 +803,7 @@ if not st.session_state.reviewer_name:
                 - Resolve: Refers to the complete disappearance of a specific medical finding or device from imaging. (e.g., resolved, cleared).
                 """)
             
-            if st.button("4 Other Information", key='btn_attr'):
+            if st.button("4 Other Information", key='btn_other'):
                     st.session_state.show_attr = not st.session_state.show_attr
 
             if st.session_state.show_attr:
