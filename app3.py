@@ -543,8 +543,6 @@ def display_data(data):
         # 섹션을 문장으로 분리
         sentences = sent_tokenize(sections[sec])
         
-        # print("sentences", sentences)
-
         # # 각 문장에 대해 sent_idx를 할당하고, 결과를 저장합니다.
         # sentences_with_idx = [{"sent_idx": idx, "sentence": sent} for idx, sent in enumerate(sentences, start=1)]
         # print("sentences_with_idx", sentences_with_idx)
@@ -572,16 +570,11 @@ def display_data(data):
             if all_processed_rows:
                 df_sec = pd.concat(all_processed_rows, ignore_index=True)
                 
-                # print("new_df.columns", df_sec.columns)
-                # print("new_df", df_sec)
                 
                 # df_sec = pd.concat([df_sec, new_df], ignore_index=True).drop_duplicates()
             
             df_sec.drop(columns=['attr', 'rel', 'OTH', 'appr', 'tmp', 'level'], errors='ignore', inplace=True)
                 
-            # print("22 df_sec", df_sec.columns)
-            # print("df_sec['sent']", df_sec['sent'])
-
             # Standardize column names based on variations
             df_sec = standardize_columns(df_sec, column_variations)
 
@@ -591,7 +584,6 @@ def display_data(data):
             raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
 
         df_sec = df_sec.reindex(columns=row2).fillna('')
-        # print("22 df_sec", df_sec['sent_idx'])
         
         #######################################################################################################################################################################################
         # Ensure each aggregate column is a list (this simplifies combining them later)
