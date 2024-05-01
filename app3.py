@@ -52,7 +52,7 @@ editable = True
 # grid_height = "100%"
 grid_width = "100%"
 
-json_folder_path = './test3/'
+json_folder_path = './test4/'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
 st.set_page_config(layout="wide")
 columns_to_drop = ['subject_id', 'study_id', 'sequence', 'section', 'report']
@@ -440,7 +440,7 @@ sub_category_mapping = {
 }
 
 
-group_by_columns = ['idx', 'sent', 'ent', 'sent_idx', 'status']
+group_by_columns = ['idx', 'sent', 'ent', 'status']
 
 # Determine columns to be aggregated
 aggregate_columns = ['location', 'evidence', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve', 'past hx', 'other source', 'technical limitation', 'misc']
@@ -461,10 +461,11 @@ def process_dict_values(row, dict_name, sentences):
     data_dict = row.get(dict_name, {})
 
     # 문장이 존재하는 경우, 해당 문장을 가져옴
-    sent_idx = row['sent_idx']  # sent_idx 값 직접 가져오기
-    sentence = sentences[sent_idx - 1] if sent_idx - 1 < len(sentences) else ''
+    # sentence = sentences[sent_idx - 1] if sent_idx - 1 < len(sentences) else ''
     row_dict = row.to_dict()  # Series를 딕셔너리로 변환
-    row_dict['sent'] = sentence  # 새로운 'sent' 키에 문장 할당
+    # row_dict['sent'] = sentence  # 새로운 'sent' 키에 문장 할당
+    
+    # print("row_dict", row_dict)
 
     for key, compound_val in data_dict.items():
         new_row = row_dict.copy()  # 기존 row_dict의 복사본을 사용하여 수정 시작
@@ -518,6 +519,7 @@ def display_data(data):
     }
     
     annotations = data.get('annotations', [])
+    annotations = annotations.replace("'", '"')
 
     # print("annotations", annotations)
     # annotations가 문자열 형태라면 JSON 객체로 변환
@@ -532,7 +534,7 @@ def display_data(data):
     dfs = {}
     aggrid_grouped_options = {}
     row1 = ['annot', 'sentence', 'sentence','entity', 'status', 'relation', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'other information', 'other information', 'other information', 'other information']
-    row2 = ['idx', 'sent', 'sent_idx','ent', 'status', 'location', 'evidence', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve', 'past hx', 'other source', 'technical limitation', 'misc']
+    row2 = ['idx', 'sent', 'ent', 'status', 'location', 'evidence', 'morphology', 'distribution', 'size', 'num', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'resolve', 'past hx', 'other source', 'technical limitation', 'misc']
 
 
     for sec in sections.keys():
@@ -541,7 +543,7 @@ def display_data(data):
         # 섹션을 문장으로 분리
         sentences = sent_tokenize(sections[sec])
         
-        print("sentences", sentences)
+        # print("sentences", sentences)
 
         # # 각 문장에 대해 sent_idx를 할당하고, 결과를 저장합니다.
         # sentences_with_idx = [{"sent_idx": idx, "sentence": sent} for idx, sent in enumerate(sentences, start=1)]
@@ -554,6 +556,8 @@ def display_data(data):
 
         # Initialize empty DataFrame with all columns from row2
         df_sec = pd.DataFrame(columns=row2)
+        
+        # print(df_sec)
 
         if filtered_annotations:
             df_sec = pd.DataFrame(filtered_annotations)
@@ -575,15 +579,15 @@ def display_data(data):
             
             df_sec.drop(columns=['attr', 'rel', 'OTH', 'appr', 'tmp', 'level'], errors='ignore', inplace=True)
                 
-            print("22 df_sec", df_sec.columns)
-            print("df_sec['sent']", df_sec['sent'])
+            # print("22 df_sec", df_sec.columns)
+            # print("df_sec['sent']", df_sec['sent'])
 
             # Standardize column names based on variations
             df_sec = standardize_columns(df_sec, column_variations)
 
     
         extra_columns = set(df_sec.columns) - set(row2)
-        if extra_columns and not extra_columns.issubset({'sent_idx', 'sec'}):
+        if extra_columns and not extra_columns.issubset({'sec', 'cat'}):
             raise ValueError(f"Extra columns found that are not defined in row2: {extra_columns}")
 
         df_sec = df_sec.reindex(columns=row2).fillna('')
