@@ -779,7 +779,7 @@ if not st.session_state.reviewer_name:
             - Evidence: Evidence entity indicating the observation of a particular entity in either single or multiple sentences. (e.g., "left lung opacity can not exclude pneumonia" => entity: pneumonia, evidence: opacity)
                 """)
                 
-            if st.button("11 Attribution", key='btn_attr'):
+            if st.button("12 Attribution", key='btn_attr'):
                     st.session_state.show_attr = not st.session_state.show_attr
 
             if st.session_state.show_attr:
