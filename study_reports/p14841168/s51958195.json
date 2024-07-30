@@ -1,0 +1,9 @@
+{
+    "subject": "p14841168",
+    "study": "s51958195",
+    "sequence": 43,
+    "History": "Year old woman with dobhoff advancement, dobhoff placement.",
+    "Findings": "",
+    "Impression": "Portable radiograph obtained for the purpose of Dobbhoff tube assessment demonstrates the tip of a Dobbhoff tube terminating in the distal stomach.",
+    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Year old woman with dobhoff advancement, dobhoff placement.\", \"ent\": \"dobhoff\", \"cat\": \"OTH\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"HIST\", \"sent\": \"Year old woman with dobhoff advancement, dobhoff placement.\", \"ent\": \"dobhoff\", \"cat\": \"OTH\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"IMPR\", \"sent\": \"Portable radiograph obtained for the purpose of Dobbhoff tube assessment demonstrates the tip of a Dobbhoff tube terminating in the distal stomach.\", \"ent\": \"dobbhoff tube\", \"cat\": \"\", \"status\": \"DP|demonstrates\", \"rel\": {\"loc\": \"loc1: stomach, det1: distal\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"For the purpose of dobbhoff tube assessment\"}}]"
+}

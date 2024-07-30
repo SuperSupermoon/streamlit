@@ -1,0 +1,9 @@
+{
+    "subject": "p12185775",
+    "study": "s53768980",
+    "sequence": 36,
+    "History": "Year old woman with L subclavian SVC pulled back 25cm, Please eval line placement. Thank you.",
+    "Findings": "",
+    "Impression": "Left subclavian catheter tip is in the upper SVC. Mild to moderate pulmonary edema has increased. No other interval change from prior study.",
+    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Year old woman with L subclavian SVC pulled back 25cm, Please eval line placement. Thank you.\", \"ent\": \"l subclavian svc\", \"cat\": \"LF\", \"status\": \"DP|pulled back 25cm\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Please eval line placement\"}}, {\"idx\": 1, \"sec\": \"IMPR\", \"sent\": \"Left subclavian catheter tip is in the upper SVC.\", \"ent\": \"left subclavian catheter tip\", \"cat\": \"OTH\", \"status\": \"DP|is in\", \"rel\": {\"loc\": \"loc1: svc, det1: upper\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"IMPR\", \"sent\": \"Mild to moderate pulmonary edema has increased.\", \"ent\": \"pulmonary edema\", \"cat\": \"CF\", \"status\": \"DP|has increased\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"sev|mild to moderate\", \"tmp\": \"worsened|increased\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"IMPR\", \"sent\": \"No other interval change from prior study.\", \"ent\": \"change\", \"cat\": \"LF\", \"status\": \"DN|No\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|no change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"From prior study\"}}]"
+}

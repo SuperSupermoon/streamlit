@@ -1,9 +1,0 @@
-{
-    "subject": "p10933609",
-    "study": "s53512860",
-    "sequence": 36,
-    "History": "Aspiration pneumonia, evaluate for change.",
-    "Findings": "There has been slight clearing of the aspiration pneumonia since the prior chest x-ray of. No new foci are present.",
-    "Impression": "Some clearing of aspiration pneumonia.",
-    "annotations": "[\n    {\"ent\": \"aspiration pneumonia|aspiration pneumonia\", \"sec\": \"HIST\", \"sent\": \"Aspiration pneumonia, evaluate for change.\", \"sent_idx\": 1, \"cat\": \"RSF\", \"exist\": \"DP|\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"aspiration pneumonia|aspiration pneumonia\", \"sec\": \"FIND\", \"sent\": \"There has been slight clearing of the aspiration pneumonia since the prior chest x-ray of.\", \"sent_idx\": 1, \"cat\": \"RSF\", \"exist\": \"DP|clearing\", \"rel\": {}, \"attr\": {\"tmp\": \"improv|clearing\", \"level\": \"sev|slight\"}},\n    {\"ent\": \"foci|focus\", \"sec\": \"FIND\", \"sent\": \"No new foci are present.\", \"sent_idx\": 2, \"cat\": \"ROF-PATH\", \"exist\": \"DN|No\", \"rel\": {}, \"attr\": {\"tmp\": \"emerg|new\"}},\n    {\"ent\": \"aspiration pneumonia|aspiration pneumonia\", \"sec\": \"IMPR\", \"sent\": \"Some clearing of aspiration pneumonia.\", \"sent_idx\": 1, \"cat\": \"RSF\", \"exist\": \"DP|clearing\", \"rel\": {}, \"attr\": {\"tmp\": \"improv|clearing\"}}\n]"
-}

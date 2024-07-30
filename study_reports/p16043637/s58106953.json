@@ -1,0 +1,9 @@
+{
+    "subject": "p16043637",
+    "study": "s58106953",
+    "sequence": 23,
+    "History": "Year old woman with PICC that has migrated out, check placement check placement.",
+    "Findings": "",
+    "Impression": "In comparison with the study of, the right PICC line has migrated outward so that the tip is with in the axillary region, outside of the chest cavity. Otherwise little change.",
+    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Year old woman with PICC that has migrated out, check placement check placement.\", \"ent\": \"picc\", \"cat\": \"OTH\", \"status\": \"DP|migrated out\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Check placement\"}}, {\"idx\": 1, \"sec\": \"IMPR\", \"sent\": \"In comparison with the study of, the right PICC line has migrated outward so that the tip is within the axillary region, outside of the chest cavity.\", \"ent\": \"picc line\", \"cat\": \"\", \"status\": \"DP|migrated outward\", \"rel\": {\"loc\": \"loc1: axillary\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"repl|migrated outward\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Outside of the chest cavity\"}}, {\"idx\": 2, \"sec\": \"IMPR\", \"sent\": \"Otherwise little change.\", \"ent\": \"change\", \"cat\": \"LF\", \"status\": \"DN|little change\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|little change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
+}

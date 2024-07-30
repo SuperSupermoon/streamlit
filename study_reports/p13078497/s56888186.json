@@ -1,0 +1,9 @@
+{
+    "subject": "p13078497",
+    "study": "s56888186",
+    "sequence": 9,
+    "History": "Respiratory distress.",
+    "Findings": "Compared to the film from earlier the same day, the appearance of the lungs with the patchy nodular infiltrates bilaterally is unchanged. The ET tube is 7 cm above the carina.",
+    "Impression": "",
+    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Respiratory distress.\", \"ent\": \"respiratory distress\", \"cat\": \"NCD\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"Compared to the film from earlier the same day, the appearance of the lungs with the patchy nodular infiltrates bilaterally is unchanged.\", \"ent\": \"lungs\", \"cat\": \"LF\", \"status\": \"DN|unchanged\", \"rel\": {\"loc\": \"loc1: bilaterally\", \"evd\": \"infiltrates|idx2\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|unchanged\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"Compared to the film from earlier the same day, the appearance of the lungs with the patchy nodular infiltrates bilaterally is unchanged.\", \"ent\": \"infiltrates\", \"cat\": \"LF\", \"status\": \"DN|unchanged\", \"rel\": {\"loc\": \"loc1: bilaterally\", \"evd\": \"\"}, \"attr\": {\"appr\": \"morph|nodular\", \"level\": \"\", \"tmp\": \"nchg|unchanged\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"FIND\", \"sent\": \"The ET tube is 7 cm above the carina.\", \"ent\": \"et tube\", \"cat\": \"OTH\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
+}

@@ -1,9 +1,0 @@
-{
-    "subject": "p10410641",
-    "study": "s52188580",
-    "sequence": 12,
-    "History": "Comparison of right pneumothorax.",
-    "Findings": "As compared to the previous radiograph, there is a mild decrease in extent of the right pneumothorax. The pneumothorax has now a dimension of approximately 1 cm. No evidence of tension. Unchanged position of the bilateral pigtail catheters in the pleural space.",
-    "Impression": "",
-    "annotations": "[\n    {\"ent\": \"pneumothorax|pneumothorax\", \"sec\": \"HIST\", \"sent\": \"Comparison of right pneumothorax.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"DP|comparison\", \"rel\": {\"loc\": \"right lung\"}, \"attr\": {}},\n    {\"ent\": \"pneumothorax|pneumothorax\", \"sec\": \"FIND\", \"sent\": \"As compared to the previous radiograph, there is a mild decrease in extent of the right pneumothorax.\", \"sent_idx\": 1, \"cat\": \"ROF-PATH\", \"exist\": \"DP|there is\", \"rel\": {\"loc\": \"right lung\"}, \"attr\": {\"tmp\": \"improved|mild decrease\"}},\n    {\"ent\": \"pneumothorax|pneumothorax\", \"sec\": \"FIND\", \"sent\": \"The pneumothorax has now a dimension of approximately 1 cm.\", \"sent_idx\": 2, \"cat\": \"ROF-PATH\", \"exist\": \"DP|has\", \"rel\": {\"loc\": \"right lung\"}, \"attr\": {\"appr\": \"size|1 cm\"}},\n    {\"ent\": \"tension|tension\", \"sec\": \"FIND\", \"sent\": \"No evidence of tension.\", \"sent_idx\": 3, \"cat\": \"ROF-PATH\", \"exist\": \"DN|No evidence\", \"rel\": {}, \"attr\": {}},\n    {\"ent\": \"pigtail catheters|pigtail catheter\", \"sec\": \"FIND\", \"sent\": \"Unchanged position of the bilateral pigtail catheters in the pleural space.\", \"sent_idx\": 4, \"cat\": \"DEV\", \"exist\": \"DP|position\", \"rel\": {\"loc\": \"pleural space\"}, \"attr\": {\"tmp\": \"nchg|unchanged\"}}\n]"
-}

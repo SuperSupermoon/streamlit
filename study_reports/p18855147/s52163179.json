@@ -1,0 +1,9 @@
+{
+    "subject": "p18855147",
+    "study": "s52163179",
+    "sequence": 14,
+    "History": "Repositioned endotracheal tube.",
+    "Findings": "In comparison with the previous study, the tip of the endotracheal tube lies approximately 4 cm above the carina. Little change in the appearance of heart and lungs.",
+    "Impression": "",
+    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Repositioned endotracheal tube.\", \"ent\": \"endotracheal tube\", \"cat\": \"OTH\", \"status\": \"DP|Repositioned\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"repl|repositioned\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"In comparison with the previous study, the tip of the endotracheal tube lies approximately 4 cm above the carina.\", \"ent\": \"endotracheal tube\", \"cat\": \"OTH\", \"status\": \"DP|lies\", \"rel\": {\"loc\": \"loc1: carina, det1: above\", \"evd\": \"\"}, \"attr\": {\"appr\": \"measure|4 cm\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"Little change in the appearance of heart and lungs.\", \"ent\": \"heart\", \"cat\": \"LF\", \"status\": \"DN|Little change\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|little change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"FIND\", \"sent\": \"Little change in the appearance of heart and lungs.\", \"ent\": \"lungs\", \"cat\": \"LF\", \"status\": \"DN|Little change\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|little change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
+}

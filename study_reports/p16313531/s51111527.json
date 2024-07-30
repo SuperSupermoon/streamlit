@@ -1,0 +1,9 @@
+{
+    "subject": "p16313531",
+    "study": "s51111527",
+    "sequence": 3,
+    "History": "-year-old female with history of aspiration pneumonia. Cough and hypoxia.",
+    "Findings": "",
+    "Impression": "AP chest compared to.",
+    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"-year-old female with history of aspiration pneumonia.\", \"ent\": \"aspiration pneumonia\", \"cat\": \"CF\", \"status\": \"DP|history of\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"history\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"HIST\", \"sent\": \"Cough and hypoxia.\", \"ent\": \"cough\", \"cat\": \"SYM\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"HIST\", \"sent\": \"Cough and hypoxia.\", \"ent\": \"hypoxia\", \"cat\": \"COF\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"IMPR\", \"sent\": \"AP chest compared to.\", \"ent\": \"ap chest\", \"cat\": \"\", \"status\": \"TP|compared to\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"comparison needed\", \"misc\": \"\"}}]"
+}

@@ -1,0 +1,9 @@
+{
+    "subject": "p19182863",
+    "study": "s55691383",
+    "sequence": 15,
+    "History": "Small left apical pneumothorax.",
+    "Findings": "In comparison with the study of, there is again a small apical pneumothorax. Areas of opacification in the right lower and left upper lung are decreasing.",
+    "Impression": "",
+    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Small left apical pneumothorax.\", \"ent\": \"pneumothorax\", \"cat\": \"PF\", \"status\": \"DP|\", \"rel\": {\"loc\": \"loc1: left apical\", \"evd\": \"\"}, \"attr\": {\"appr\": \"measure|small\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"In comparison with the study of, there is again a small apical pneumothorax.\", \"ent\": \"pneumothorax\", \"cat\": \"PF\", \"status\": \"DP|there is again\", \"rel\": {\"loc\": \"loc1: apical\", \"evd\": \"\"}, \"attr\": {\"appr\": \"measure|small\", \"level\": \"\", \"tmp\": \"nchg|again\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"Areas of opacification in the right lower and left upper lung are decreasing.\", \"ent\": \"opacification\", \"cat\": \"LF\", \"status\": \"DP|are decreasing\", \"rel\": {\"loc\": \"loc1: left upper lung\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"impr|decreasing\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
+}

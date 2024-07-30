@@ -1,9 +1,0 @@
-{
-    "subject": "p10715477",
-    "study": "s59089311",
-    "sequence": 4,
-    "History": "New central line placement.",
-    "Findings": "In comparison with the earlier study of this date, there has been placement of a left IJ catheter that extends to the upper portion of the SVC. No evidence of pneumothorax. Otherwise, little change.",
-    "Impression": "",
-    "annotations": "[\n    {\"ent\": \"central line|central line\", \"sec\": \"HIST\", \"sent\": \"New central line placement.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|placement\", \"rel\": {}, \"attr\": {\"tmp\": \"emerg|new\"}},\n    {\"ent\": \"IJ catheter|IJ catheter\", \"sec\": \"FIND\", \"sent\": \"In comparison with the earlier study of this date, there has been placement of a left IJ catheter that extends to the upper portion of the SVC.\", \"sent_idx\": 1, \"cat\": \"DEV\", \"exist\": \"DP|placement\", \"rel\": {\"loc\": \"left IJ, upper portion of the SVC\"}, \"attr\": {\"tmp\": \"emerg|new\"}},\n    {\"ent\": \"pneumothorax|pneumothorax\", \"sec\": \"FIND\", \"sent\": \"No evidence of pneumothorax.\", \"sent_idx\": 2, \"cat\": \"ROF-PATH\", \"exist\": \"DN|No evidence\", \"rel\": {}, \"attr\": {}}\n]"
-}

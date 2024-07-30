@@ -1,0 +1,9 @@
+{
+    "subject": "p13263843",
+    "study": "s54433794",
+    "sequence": 1,
+    "History": "",
+    "Findings": "The left lung is essentially clear.",
+    "Impression": "",
+    "annotations": "[{\"idx\": 0, \"sec\": \"FIND\", \"sent\": \"The left lung is essentially clear.\", \"ent\": \"left lung\", \"cat\": \"LF\", \"status\": \"DN|essentially clear\", \"rel\": {\"loc\": \"loc1: left\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
+}

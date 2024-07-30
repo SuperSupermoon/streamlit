@@ -1,0 +1,9 @@
+{
+    "subject": "p16848073",
+    "study": "s57686985",
+    "sequence": 4,
+    "History": "Esophageal adenocarcinoma. Assess interval change or right lower lobe infiltrate.",
+    "Findings": "CHEST, SINGLE AP PORTABLE VIEW. Compared with with 6:34 pm. And allowing for technical differences, I doubt significant interval change.",
+    "Impression": "",
+    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Esophageal adenocarcinoma.\", \"ent\": \"esophageal adenocarcinoma\", \"cat\": \"NCD\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"HIST\", \"sent\": \"Assess interval change or right lower lobe infiltrate.\", \"ent\": \"infiltrate\", \"cat\": \"LF\", \"status\": \"TP|Assess\", \"rel\": {\"loc\": \"loc1: right lower lobe\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"CHEST, SINGLE AP PORTABLE VIEW. Compared with with 6:34 pm. And allowing for technical differences, I doubt significant interval change.\", \"ent\": \"chest, single ap portable view\", \"cat\": \"\", \"status\": \"DN|I doubt\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|no significant interval change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"IMPR\", \"sent\": \"Compared with with 6:34 pm. And allowing for technical differences, I doubt significant interval change.\", \"ent\": \"change\", \"cat\": \"LF\", \"status\": \"DN|I doubt\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
+}

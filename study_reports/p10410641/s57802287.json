@@ -1,0 +1,9 @@
+{
+    "subject": "p10410641",
+    "study": "s57802287",
+    "sequence": 18,
+    "History": "",
+    "Findings": "Pigtail pleural catheters remain in place bilaterally. Small bilateral apical lateral pneumothoraces have slightly decreased in size since the prior study. Small left pleural effusion is again demonstrated.",
+    "Impression": "",
+    "annotations": "[{\"idx\": 0, \"sec\": \"FIND\", \"sent\": \"Pigtail pleural catheters remain in place bilaterally.\", \"ent\": \"pigtail pleural catheters\", \"cat\": \"OTH\", \"status\": \"DP|remain in place\", \"rel\": {\"loc\": \"loc1: bilaterally\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"Small bilateral apical lateral pneumothoraces have slightly decreased in size since the prior study.\", \"ent\": \"pneumothoraces\", \"cat\": \"PF\", \"status\": \"DP|have slightly decreased in size\", \"rel\": {\"loc\": \"loc1: bilateral apical, det1: lateral\", \"evd\": \"\"}, \"attr\": {\"appr\": \"measure|small\", \"level\": \"\", \"tmp\": \"impr|slightly decreased\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"Small left pleural effusion is again demonstrated.\", \"ent\": \"effusion\", \"cat\": \"PF\", \"status\": \"DP|is again demonstrated\", \"rel\": {\"loc\": \"loc1: left\", \"evd\": \"\"}, \"attr\": {\"appr\": \"measure|small\", \"level\": \"\", \"tmp\": \"nchg|again\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
+}
