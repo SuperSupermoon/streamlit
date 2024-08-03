@@ -1,9 +1,0 @@
-{
-    "subject": "p18110020",
-    "study": "s54704786",
-    "sequence": 12,
-    "History": "Cerebral palsy, seizures assess feeding tube.",
-    "Findings": "Feeding tube tip is in the stomach. There are no other acute changes from the same day earlier in the morning.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Cerebral palsy, seizures assess feeding tube.\", \"ent\": \"cerebral palsy\", \"cat\": \"NCD\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"history\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"HIST\", \"sent\": \"Cerebral palsy, seizures assess feeding tube.\", \"ent\": \"seizures\", \"cat\": \"SYM\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"Feeding tube tip is in the stomach.\", \"ent\": \"feeding tube tip\", \"cat\": \"OTH\", \"status\": \"DP|is in\", \"rel\": {\"loc\": \"loc1: stomach\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"FIND\", \"sent\": \"There are no other acute changes from the same day earlier in the morning.\", \"ent\": \"changes\", \"cat\": \"LF\", \"status\": \"DN|no other\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"From the same day earlier in the morning\"}}]"
-}
