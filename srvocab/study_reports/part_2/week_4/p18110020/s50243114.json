@@ -1,9 +1,0 @@
-{
-    "subject": "p18110020",
-    "study": "s50243114",
-    "sequence": 5,
-    "History": "NT placement.",
-    "Findings": "In comparison with the study of, there is little change in the appearance of heart and lungs. Nasogastric tube coils within the fundus of the stomach with the tip in the upper to mid body of this organ.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"NT placement.\", \"ent\": \"nt\", \"cat\": \"\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"In comparison with the study of, there is little change in the appearance of heart and lungs.\", \"ent\": \"heart\", \"cat\": \"LF\", \"status\": \"DN|little change\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|little change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"In comparison with the study of, there is little change in the appearance of heart and lungs.\", \"ent\": \"lungs\", \"cat\": \"LF\", \"status\": \"DN|little change\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|little change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"FIND\", \"sent\": \"Nasogastric tube coils within the fundus of the stomach with the tip in the upper to mid body of this organ.\", \"ent\": \"nasogastric tube\", \"cat\": \"OTH\", \"status\": \"DP|coils within\", \"rel\": {\"loc\": \"loc1: upper to mid body of the stomach\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}

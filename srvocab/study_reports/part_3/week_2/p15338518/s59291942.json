@@ -1,9 +1,0 @@
-{
-    "subject": "p15338518",
-    "study": "s59291942",
-    "sequence": 6,
-    "History": "NG tube placement.",
-    "Findings": "In comparison with earlier study of this date, the nasogastric tube extends well into the stomach with the tip beyond the lower limit of the image. The Dobbhoff tube has been removed.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"NG tube placement.\", \"ent\": \"ng tube\", \"cat\": \"OTH\", \"status\": \"DP|placement\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Placement\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"In comparison with earlier study of this date, the nasogastric tube extends well into the stomach with the tip beyond the lower limit of the image.\", \"ent\": \"nasogastric tube\", \"cat\": \"OTH\", \"status\": \"DP|extends well\", \"rel\": {\"loc\": \"loc1: stomach\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"comp|beyond the lower limit of the image\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"The Dobbhoff tube has been removed.\", \"ent\": \"dobbhoff tube\", \"cat\": \"\", \"status\": \"DP|has been removed\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Removed\"}}]"
-}

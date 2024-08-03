@@ -1,9 +1,0 @@
-{
-    "subject": "p11293517",
-    "study": "s57774874",
-    "sequence": 7,
-    "History": "Questioning aspiration pneumonia.",
-    "Findings": "Chest PA and lateral radiographs redemonstrate mild interstitial edema and mild cardiomegaly. No signs of aspiration and no change from prior CXR.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Questioning aspiration pneumonia.\", \"ent\": \"aspiration pneumonia\", \"cat\": \"CF\", \"status\": \"TP|questioning\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"Chest PA and lateral radiographs redemonstrate mild interstitial edema and mild cardiomegaly.\", \"ent\": \"interstitial edema\", \"cat\": \"CF\", \"status\": \"DP|redemonstrate\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"sev|mild\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"Chest PA and lateral radiographs redemonstrate mild interstitial edema and mild cardiomegaly.\", \"ent\": \"cardiomegaly\", \"cat\": \"PF\", \"status\": \"DP|redemonstrate\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"sev|mild\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"FIND\", \"sent\": \"No signs of aspiration and no change from prior CXR.\", \"ent\": \"aspiration\", \"cat\": \"CF\", \"status\": \"DN|No signs\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|no change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}
