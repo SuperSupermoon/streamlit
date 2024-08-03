@@ -27,7 +27,7 @@ editable = True
 # grid_height = "100%"
 grid_width = "100%"
 
-json_folder_path = './srvocab/study_reports/part_1/week_1'
+json_folder_path = './srvocab/study_reports/part_3/week_1'
 json_files = [os.path.join(root, file) for root, _, files in os.walk(json_folder_path) for file in files if file.endswith('.json')]
 st.set_page_config(layout="wide")
 columns_to_drop = ['subject_id', 'study_id', 'sequence', 'section', 'report']
