@@ -1,9 +1,0 @@
-{
-    "subject": "p19028690",
-    "study": "s54499704",
-    "sequence": 10,
-    "History": "-year-old man with slurred speech.",
-    "Findings": "",
-    "Impression": "No acute intrathoracic process.",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"-year-old man with slurred speech.\", \"ent\": \"slurred speech\", \"cat\": \"SYM\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"IMPR\", \"sent\": \"No acute intrathoracic process.\", \"ent\": \"process\", \"cat\": \"LF\", \"status\": \"DN|No\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"emerge|acute\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}

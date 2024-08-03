@@ -1,9 +1,0 @@
-{
-    "subject": "p10046166",
-    "study": "s57977208",
-    "sequence": 2,
-    "History": "Post-procedure, to assess for pneumothorax.",
-    "Findings": "In comparison with the study of, there is no evidence of pneumothorax. Continued low lung volumes with substantial mass in the right paratracheal region.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Post-procedure, to assess for pneumothorax.\", \"ent\": \"pneumothorax\", \"cat\": \"PF\", \"status\": \"TP|to assess for\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"post-procedure\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"In comparison with the study of, there is no evidence of pneumothorax.\", \"ent\": \"pneumothorax\", \"cat\": \"PF\", \"status\": \"DN|no evidence of\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"Continued low lung volumes with substantial mass in the right paratracheal region.\", \"ent\": \"volumes\", \"cat\": \"LF\", \"status\": \"DP|low\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"measure|low\", \"level\": \"\", \"tmp\": \"nchg|continued\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"FIND\", \"sent\": \"Continued low lung volumes with substantial mass in the right paratracheal region.\", \"ent\": \"mass\", \"cat\": \"PF\", \"status\": \"DP|substantial\", \"rel\": {\"loc\": \"loc1: right paratracheal region\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"sev|substantial\", \"tmp\": \"nchg|continued\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}
