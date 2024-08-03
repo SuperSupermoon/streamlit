@@ -1,9 +1,0 @@
-{
-    "subject": "p15338518",
-    "study": "s56387971",
-    "sequence": 9,
-    "History": "",
-    "Findings": "With the exception of slight improved aeration at the left lung base, there has not been a substantial change in the appearance of the chest since the recent study of one day earlier.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"FIND\", \"sent\": \"With the exception of slight improved aeration at the left lung base, there has not been a substantial change in the appearance of the chest since the recent study of one day earlier.\", \"ent\": \"aeration\", \"cat\": \"PF\", \"status\": \"DP|improved\", \"rel\": {\"loc\": \"loc1: left lung base\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"sev|slight\", \"tmp\": \"impr|improved\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"With the exception of slight improved aeration at the left lung base, there has not been a substantial change in the appearance of the chest since the recent study of one day earlier.\", \"ent\": \"appearance\", \"cat\": \"LF\", \"status\": \"DN|not been a substantial change\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|no substantial change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Since the recent study of one day earlier\"}}]"
-}

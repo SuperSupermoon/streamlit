@@ -1,9 +1,0 @@
-{
-    "subject": "p13078497",
-    "study": "s58226576",
-    "sequence": 10,
-    "History": "Respiratory distress.",
-    "Findings": "Compared to the study from the prior day, there is no significant interval change.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Respiratory distress.\", \"ent\": \"respiratory distress\", \"cat\": \"NCD\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"Compared to the study from the prior day, there is no significant interval change.\", \"ent\": \"change\", \"cat\": \"LF\", \"status\": \"DN|no significant\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|no significant interval change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Compared to the study from the prior day\"}}, {\"idx\": 2, \"sec\": \"IMPR\", \"sent\": \"\", \"ent\": \"nan\", \"cat\": \"\", \"status\": \"\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}

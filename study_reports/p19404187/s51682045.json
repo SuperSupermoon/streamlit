@@ -1,9 +1,0 @@
-{
-    "subject": "p19404187",
-    "study": "s51682045",
-    "sequence": 3,
-    "History": "GI bleed.",
-    "Findings": "The left upper lung mass is not visualized on todays study. There is diffuse increase in lung markings on the left compared to the right but no definite infiltrate.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"GI bleed.\", \"ent\": \"gi bleed\", \"cat\": \"SYM\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"The left upper lung mass is not visualized on todays study.\", \"ent\": \"mass\", \"cat\": \"PF\", \"status\": \"DN|not visualized\", \"rel\": {\"loc\": \"loc1: left upper lung\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"There is diffuse increase in lung markings on the left compared to the right but no definite infiltrate.\", \"ent\": \"markings\", \"cat\": \"LF\", \"status\": \"DP|diffuse increase\", \"rel\": {\"loc\": \"loc1: left\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"comp|left more than right\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"FIND\", \"sent\": \"There is diffuse increase in lung markings on the left compared to the right but no definite infiltrate.\", \"ent\": \"infiltrate\", \"cat\": \"LF\", \"status\": \"DN|no definite\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}

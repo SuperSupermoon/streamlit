@@ -1,9 +1,0 @@
-{
-    "subject": "p16751749",
-    "study": "s58820049",
-    "sequence": 25,
-    "History": "Septic shock, check interval change.",
-    "Findings": "Compared to the prior study there is no significant interval change.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Septic shock, check interval change.\", \"ent\": \"septic shock\", \"cat\": \"NCD\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"Compared to the prior study there is no significant interval change.\", \"ent\": \"change\", \"cat\": \"LF\", \"status\": \"DN|no significant\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}

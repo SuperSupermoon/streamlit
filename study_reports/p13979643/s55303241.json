@@ -1,9 +1,0 @@
-{
-    "subject": "p13979643",
-    "study": "s55303241",
-    "sequence": 15,
-    "History": "Shortness of breath and crackles, question new acute process.",
-    "Findings": "Compared to the study from the prior evening, there is no significant interval change.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Shortness of breath and crackles, question new acute process.\", \"ent\": \"shortness of breath\", \"cat\": \"SYM\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"HIST\", \"sent\": \"Shortness of breath and crackles, question new acute process.\", \"ent\": \"crackles\", \"cat\": \"COF\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"HIST\", \"sent\": \"Shortness of breath and crackles, question new acute process.\", \"ent\": \"process\", \"cat\": \"LF\", \"status\": \"TP|question new\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"emerge|new\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"FIND\", \"sent\": \"Compared to the study from the prior evening, there is no significant interval change.\", \"ent\": \"change\", \"cat\": \"LF\", \"status\": \"DN|no significant\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Compared to the study from the prior evening\"}}]"
-}

@@ -1,9 +1,0 @@
-{
-    "subject": "p10933609",
-    "study": "s53512860",
-    "sequence": 36,
-    "History": "Aspiration pneumonia, evaluate for change.",
-    "Findings": "There has been slight clearing of the aspiration pneumonia since the prior chest x-ray of. No new foci are present.",
-    "Impression": "Some clearing of aspiration pneumonia.",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Aspiration pneumonia, evaluate for change.\", \"ent\": \"aspiration pneumonia\", \"cat\": \"CF\", \"status\": \"DP|evaluate for change\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"There has been slight clearing of the aspiration pneumonia since the prior chest x-ray.\", \"ent\": \"aspiration pneumonia\", \"cat\": \"CF\", \"status\": \"DP|slight clearing\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"impr|slight clearing\"}, \"OTH\": {\"hx\": \"\", \"source\": \"prior chest x-ray\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"No new foci are present.\", \"ent\": \"foci\", \"cat\": \"LF\", \"status\": \"DN|No new\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|no new\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"IMPR\", \"sent\": \"Some clearing of aspiration pneumonia.\", \"ent\": \"aspiration pneumonia\", \"cat\": \"CF\", \"status\": \"DP|Some clearing\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"impr|some clearing\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}

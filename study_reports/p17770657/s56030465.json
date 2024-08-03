@@ -1,9 +1,0 @@
-{
-    "subject": "p17770657",
-    "study": "s56030465",
-    "sequence": 3,
-    "History": "Pneumonia and effusion.",
-    "Findings": "In comparison with the study of earlier on this date, there is slightly less subcutaneous gas along the right chest wall. Little change in the small amount of subcutaneous gas along the left chest wall.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Pneumonia and effusion.\", \"ent\": \"pneumonia\", \"cat\": \"CF\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"HIST\", \"sent\": \"Pneumonia and effusion.\", \"ent\": \"effusion\", \"cat\": \"PF\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"FIND\", \"sent\": \"In comparison with the study of earlier on this date, there is slightly less subcutaneous gas along the right chest wall.\", \"ent\": \"gas\", \"cat\": \"PF\", \"status\": \"DP|slightly less\", \"rel\": {\"loc\": \"loc1: right chest wall\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"comp|less than before\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 3, \"sec\": \"FIND\", \"sent\": \"Little change in the small amount of subcutaneous gas along the left chest wall.\", \"ent\": \"gas\", \"cat\": \"PF\", \"status\": \"DN|little change\", \"rel\": {\"loc\": \"loc1: left chest wall\", \"evd\": \"\"}, \"attr\": {\"appr\": \"measure|small amount\", \"level\": \"\", \"tmp\": \"nchg|little change\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}

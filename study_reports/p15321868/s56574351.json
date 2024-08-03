@@ -1,9 +1,0 @@
-{
-    "subject": "p15321868",
-    "study": "s56574351",
-    "sequence": 6,
-    "History": "Nasogastric tube placed, check position.",
-    "Findings": "The chest x-ray includes the upper abdomen and shows satisfactory position of the nasogastric tube within the stomach.",
-    "Impression": "",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Nasogastric tube placed, check position.\", \"ent\": \"nasogastric tube\", \"cat\": \"OTH\", \"status\": \"DP|placed\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Check position\"}}, {\"idx\": 1, \"sec\": \"FIND\", \"sent\": \"The chest x-ray includes the upper abdomen and shows satisfactory position of the nasogastric tube within the stomach.\", \"ent\": \"nasogastric tube\", \"cat\": \"OTH\", \"status\": \"DP|shows satisfactory position\", \"rel\": {\"loc\": \"loc1: stomach\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"Included upper abdomen\"}}]"
-}

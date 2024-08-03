@@ -1,9 +1,0 @@
-{
-    "subject": "p19075045",
-    "study": "s56350217",
-    "sequence": 13,
-    "History": "Aspiration pneumonia, evaluate interval change. CHEST, SINGLE AP PORTABLE VIEW.",
-    "Findings": "",
-    "Impression": "Overall similar to the most recent prior film. Pleural fluid at the left lung base may be slightly increased.",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Aspiration pneumonia, evaluate interval change.\", \"ent\": \"aspiration pneumonia\", \"cat\": \"CF\", \"status\": \"DP|\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"IMPR\", \"sent\": \"Overall similar to the most recent prior film.\", \"ent\": \"film comparison\", \"cat\": \"\", \"status\": \"DN|similar\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|similar\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"IMPR\", \"sent\": \"Pleural fluid at the left lung base may be slightly increased.\", \"ent\": \"fluid\", \"cat\": \"PF\", \"status\": \"TP|may be slightly increased\", \"rel\": {\"loc\": \"loc1: left lung base\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"worsened|slightly increased\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}

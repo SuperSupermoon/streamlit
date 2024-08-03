@@ -1,9 +1,0 @@
-{
-    "subject": "p18487334",
-    "study": "s53404392",
-    "sequence": 18,
-    "History": "Year old man with ngt, eval ngt placement eval ngt placement.",
-    "Findings": "",
-    "Impression": "In comparison with the earlier study of this date, the Dobhoff tube can be seen only to the level of the distal esophagus, were crosses the lower margin of the image, to evaluate the tip, a view of the upper abdomen must be obtained using abdominal technique. The area of increased opacification at the right base seen previously is not appreciated at this time.",
-    "annotations": "[{\"idx\": 0, \"sec\": \"HIST\", \"sent\": \"Year old man with ngt, eval ngt placement eval ngt placement.\", \"ent\": \"ngt\", \"cat\": \"OTH\", \"status\": \"DP|eval\", \"rel\": {\"loc\": \"\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 1, \"sec\": \"IMPR\", \"sent\": \"In comparison with the earlier study of this date, the Dobhoff tube can be seen only to the level of the distal esophagus, were crosses the lower margin of the image, to evaluate the tip, a view of the upper abdomen must be obtained using abdominal technique.\", \"ent\": \"dobhoff tube\", \"cat\": \"OTH\", \"status\": \"DP|can be seen\", \"rel\": {\"loc\": \"loc1: esophagus, det1: distal\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}, {\"idx\": 2, \"sec\": \"IMPR\", \"sent\": \"The area of increased opacification at the right base seen previously is not appreciated at this time.\", \"ent\": \"opacification\", \"cat\": \"LF\", \"status\": \"DN|not appreciated\", \"rel\": {\"loc\": \"loc1: right base\", \"evd\": \"\"}, \"attr\": {\"appr\": \"\", \"level\": \"\", \"tmp\": \"nchg|not appreciated\"}, \"OTH\": {\"hx\": \"\", \"source\": \"\", \"tech\": \"\", \"misc\": \"\"}}]"
-}
