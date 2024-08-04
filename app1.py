@@ -105,7 +105,7 @@ sub_category_mapping = {
 }
 
 
-group_by_columns = ['idx', 'sent', 'ent', 'status']
+group_by_columns = ['idx', 'sent', 'ent', 'cat', 'status']
 
 # Determine columns to be aggregated
 aggregate_columns = ['location', 'evidence', 'associate', 'morphology', 'distribution', 'measure', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'past hx', 'other source', 'technical limitation', 'misc']
@@ -190,7 +190,7 @@ def display_data(data):
     dfs = {}
     aggrid_grouped_options = {}
     row1 = ['annot', 'sentence', 'entity', 'status', 'relation', 'relation', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'other information', 'other information', 'other information', 'other information']
-    row2 = ['idx', 'sent', 'ent', 'status', 'location', 'evidence', 'associate', 'morphology', 'distribution', 'measure', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'past hx', 'other source', 'technical limitation', 'misc']
+    row2 = ['idx', 'sent', 'ent', 'cat', 'status', 'location', 'evidence', 'associate', 'morphology', 'distribution', 'measure', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'past hx', 'other source', 'technical limitation', 'misc']
 
 
     for sec in sections.keys():
