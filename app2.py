@@ -33,6 +33,7 @@ st.set_page_config(layout="wide")
 columns_to_drop = ['subject_id', 'study_id', 'sequence', 'section', 'report']
 
 
+
 def get_full_path(service, file_id, file_name):
     """Get the full path of a file or folder on Google Drive by recursively looking up its parents."""
     path = [file_name]
@@ -189,7 +190,7 @@ def display_data(data):
 
     dfs = {}
     aggrid_grouped_options = {}
-    row1 = ['annot', 'sentence', 'entity', 'status', 'relation', 'relation', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'other information', 'other information', 'other information', 'other information']
+    row1 = ['annot', 'sentence', 'entity', 'status', 'status', 'relation', 'relation', 'relation', 'attribute.appearance', 'attribute.appearance', 'attribute.appearance', 'attribute.level', 'attribute.level', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'attribute.temporal', 'other information', 'other information', 'other information', 'other information']
     row2 = ['idx', 'sent', 'ent', 'cat', 'status', 'location', 'evidence', 'associate', 'morphology', 'distribution', 'measure', 'severity', 'comparision', 'emerge', 'no change', 'improved', 'worsened', 'reposition', 'past hx', 'other source', 'technical limitation', 'misc']
 
 
@@ -323,11 +324,14 @@ if not st.session_state.reviewer_name:
             - **Submit Feedback**: 섹션별 리뷰를 수행한 후, 제출 버튼을 눌러야 해당 섹션의 리뷰 내용이 저장됩니다.
             - **피드백 형식**: 피드백을 남길 시 반드시 원본 테이블에 등장하는 형식을 따라주세요.  
                 *ex) status: DP|worsening*
+                *ex) Location: 'loc1: right lower lobe, det1: medial', 'loc1: right upper lung, det1: , loc2: right mid lung, det2: ',
+                *ex) Evidence: 증거가 되는 lower level finding이 evidence로 들어가야함. entity, index 숫자 ex. opacity, idx 3
+                *ex) Association: evidence를 포함하고, 여러개가 될 수 있음. ex. opacity는 nipple shadow인 것 같다. => opacity 쪽에도, nipple shadow 쪽에도 associate를 나타냄. 'pleural effusion, idx3'
 
             #### 피드백:
             1. **Feedback**: GPT-4 결과에 대해 수정이 필요하다면, 상단에 등장하는 테이블의 cell을 직접 수정후, Submit feedback을 눌러 확인해주세요. 수정을 할 내용이 없어도 Submit feedback을 눌러주세요.
             2. **Add Row**: GPT-4가 놓친 결과에 대해 row를 추가해야할 경우, add rows를 눌러 추가하고, 내용을 정확하게 기입해주세요. (입력 내용이 정확하다면 table내 등장 순서는 상관없습니다.)
-            2. **Remove Last Row**: GPT-4의 내용이 잘못되어 삭제하기 위한 방법은 마지막부터 순서대로 지우는 방법밖에 없습니다. 따라서, 1. 마지막부터 row 자체를 삭제하거나 2. 처음이나 중간 부분의 내용을 모두 삭제하기 위해서는 해당 cell의 내용을 모두 지워 공백으로 만들어주세요. (공백인 cell은 삭제한 것으로 간주해, 최종 모두 제외될 예정입니다.)
+            3. **Remove Last Row**: GPT-4의 내용이 잘못되어 삭제하기 위한 방법은 마지막부터 순서대로 지우는 방법밖에 없습니다. 따라서, 1. 마지막부터 row 자체를 삭제하거나 2. 처음이나 중간 부분의 내용을 모두 삭제하기 위해서는 해당 cell의 내용을 모두 지워 공백으로 만들어주세요. (공백인 cell은 삭제한 것으로 간주해, 최종 모두 제외될 예정입니다.)
             
             ## 제출
             - **저장과 제출**: 각 섹션에서 피드백을 모두 완료한 뒤, '제출' 버튼을 클릭하여 피드백을 저장하세요. 앱을 재접속하면 가장 최근 제출한 피드백이 나타나고, 다시 수정하게 될 경우에도 submit feedback을 눌러 저장해주세요. 
@@ -396,13 +400,13 @@ if not st.session_state.reviewer_name:
                     
                     ex) 'fatigue', 'cough', 'shortness of breath', 'vomiting'
                 
-                - ROF (Radiological objective findings, or low-level/perceptual findings)
+                - PF (Radiological objective findings, or low-level/perceptual findings)
                     
                     Identifiable radiological findings from a chest X-ray image alone, without external information such as the patient's history or other source results.
                     
                     ex) 'opacity', 'thickening', 'density', 'lung volume', 'collapse','consolidation', 'inﬁltration', 'atelectasis', 'pulmonary edema', 'pleural effusion', 'bronchiectasis', 'calciﬁcation', 'pneumothorax', 'hydropneumothorax', 'lesion', 'mass', 'nodule', 'fracture', 'hyperaeration', 'Cyst', 'Bullae', 'Scoliosis'
                 
-                - RSF (Radiological subjective findings, or contextual findings)
+                - CF (Contextual findings)
                     
                     Diagnosis based on a physician's judgment or reasoning incorporating the chest x-ray image and external information like patient history or lab findings.       
                     
@@ -439,10 +443,10 @@ if not st.session_state.reviewer_name:
             1. Appearance (appearance), which can be categorized as
                 - Morphology: Physical form, structure, shape, pattern or texture of an object or substance. (e.g., irregular, rounded, dense, ground-glass,  patchy, linear, plate-like, nodular)
                 - Distribution: Arrangement, spread of objects or elements within a particular area or space (e.g., focal, multifocal/multi-focal, scattered, hazy, widespread)
-                - Size: Physical dimensions or overall magnitude of an entity (small, large, massive, subtle, minor, xx cm)
+                - Measurement: Physical dimensions or overall magnitude of an entity (small, large, massive, subtle, minor, xx cm), Attributes are about counting or quantifying individual occurrences or components. (e.g, single, multiple, few, trace)
+
 
             2. Level (level), which can be categorized as
-                - Numeric: Attributes are about counting or quantifying individual occurrences or components. (e.g, single, multiple, few, trace)
                 - Sevierity: Attributes referring to severity or stage describe the extent or intensity of a particular condition or characteristic associated with an entity, indicating the seriousness or progression of the condition. (e.g., mild, moderate, severe, low-grade, benign, malignant)
                 - Comparison: An attribute indicating how one medical finding differs from another within a single study, without considering temporal aspects. (e.g., "left is brighter than right")
 
@@ -452,7 +456,6 @@ if not st.session_state.reviewer_name:
                 - Improvement: Refers to a positive change or stabilization in a patient's clinical state when compared to a prior assessment. (e.g., improved, decreased, stable)
                 - Worsened: Refers to the negative change in a patient's clinical state in comparison to a prior assessment. (e.g., worsened, increased)
                 - Reposition: Refers to the altered position of a medical device inside a patient compared to prior studies. (e.g., displaced, repositioned).
-                - Resolve: Refers to the complete disappearance of a specific medical finding or device from imaging. (e.g., resolved, cleared).
                 """)
             
             if st.button("4 Other Information", key='btn_other'):
@@ -461,9 +464,9 @@ if not st.session_state.reviewer_name:
             if st.session_state.show_attr:
                 st.markdown("""
                 1. Past HX: Indicates whether the entity is related to the patient's known past medical history including surgical history etc.
-                    e.g., "Status post median sternotomy for CABG with stable cardiac enlargement and calcification of the aorta consistent with atherosclerosis.", note as "entity: CABG, Other Information: Past HX|surgical history".
-
-                2. source: Only note if the entity originates from a source other than the CXR. Specify this source, 
+                    e.g., "Status post median sternotomy for CABG with stable cardiac enlargement and calcification of the aorta consistent with atherosclerosis.", note as "entity: CABG, Other Information: Past HX|Status post".
+ 
+                2. other source: Only note if the entity originates from a source other than the CXR. Specify this source, 
                     e.g., "A known enlarged right hilar lymph node seen on CT of likely accounts for the increased opacity at the right hilum.", note as "entity: lymph node, Other Information: source|CT".
                 
                 3. Technical Limitation: Identify any technical issues that could impact the visibility or interpretation of the entity, 
