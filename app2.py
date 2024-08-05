@@ -636,6 +636,7 @@ if st.session_state.reviewer_name:
     feedback_data = {}
     for current_section, content in sections.items():
         feedback_data[current_section] = {}
+        
         st.write("")
         st.markdown(f" <span style='font-size: 2em;'> :clipboard: {current_section}: </span> <span style='font-size: 1.2em;'> {content}</span>", unsafe_allow_html=True)
 
@@ -647,6 +648,12 @@ if st.session_state.reviewer_name:
                 if len(content) != 0 and content != '':
                     error_message = f"Did you forget to annotate this section?"
                     st.error(error_message, icon="🚨")
+                    filtered_df = current_df
+                    previous_results = None
+            else:
+                previous_results = 'Yes'
+                    
+                    
         ################################################################################################
         with st.expander(f"**{current_section} Review Start**"):
             
@@ -657,7 +664,11 @@ if st.session_state.reviewer_name:
             
             if isinstance(previous_feedback, pd.DataFrame):
                 if current_section not in st.session_state.my_dfs:
-                    st.write(":male-doctor: Previous Review:")                        
+                    if previous_results:
+                        st.write(":male-doctor: Previous Review:")   
+                    else:
+                        st.write(":male-doctor: Original result:")                        
+                        
                     load_df = filtered_df.copy()
                     load_df.columns = load_df.columns.astype(str)
                     st.session_state.my_dfs[current_section] = load_df                    
